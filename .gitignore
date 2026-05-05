@@ -1,0 +1,11 @@
+# Claude Code local settings
+.claude/
+
+# GameMaker IDE generated files
+.import/
+*.lock
+Temp/
+
+# OS files
+Thumbs.db
+.DS_Store
