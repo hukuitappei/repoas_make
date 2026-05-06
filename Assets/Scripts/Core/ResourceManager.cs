@@ -13,16 +13,12 @@ public class ResourceManager
         for (int i = 0; i < state.Buildings.Count; i++)
         {
             BuildingBase building = state.Buildings[i];
-            if (building == null)
+            if (building == null || !building.IsActive)
             {
                 continue;
             }
 
-            building.OnTurnStart(state);
-            if (building.IsActive)
-            {
-                fundsDelta -= building.Data != null ? building.Data.GetMaintenanceCostFunds(building.Level) : 0;
-            }
+            fundsDelta -= building.Data != null ? building.Data.GetMaintenanceCostFunds(building.Level) : 0;
         }
 
         if (state.FoodProductionPercentBonus != 0)

@@ -31,6 +31,7 @@ public class TurnManager
 
     public void AdvanceTurn()
     {
+        ResolveBuildingsTurnStart();
         _eventSystem.ResolveTurnStartEvents(_state);
         _resourceManager.ResolveTurnResources(_state);
         _guildManager.ResolveActions(_state);
@@ -38,6 +39,31 @@ public class TurnManager
         _raidSystem.ResolveRaidCheck(_state);
         _dungeonSystem.ResolveExplorationProgress(_state);
         _researchTree.AdvanceResearch(_state);
+        ResolveBuildingsTurnEnd();
         _state.AdvanceTurn();
+    }
+
+    private void ResolveBuildingsTurnStart()
+    {
+        for (int i = 0; i < _state.Buildings.Count; i++)
+        {
+            BuildingBase building = _state.Buildings[i];
+            if (building != null && building.IsActive)
+            {
+                building.OnTurnStart(_state);
+            }
+        }
+    }
+
+    private void ResolveBuildingsTurnEnd()
+    {
+        for (int i = 0; i < _state.Buildings.Count; i++)
+        {
+            BuildingBase building = _state.Buildings[i];
+            if (building != null && building.IsActive)
+            {
+                building.OnTurnEnd(_state);
+            }
+        }
     }
 }
