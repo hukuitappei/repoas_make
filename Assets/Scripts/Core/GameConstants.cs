@@ -49,7 +49,4 @@ public static class GameConstants
     public const float OVERCROWDING_START_RATIO = 0.9f;
     public const int OVERCROWDING_MAX_PENALTY = -20;
     public const int FUNDS_NEGATIVE_PENALTY = -10;
-
-    public const string EXPLORATION_TARGET_RAID_ORIGIN = "raid_origin";
-    public const string EXPLORATION_TARGET_DUNGEON = "dungeon";
 }
