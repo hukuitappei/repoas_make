@@ -16,14 +16,34 @@ public class DungeonSystem
         _random = new System.Random();
     }
 
+    public bool HasActiveRun(GuildMember member)
+    {
+        if (member == null)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < _activeRuns.Count; i++)
+        {
+            DungeonRun run = _activeRuns[i];
+            if (run != null && run.Member == member)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public bool StartExploration(GuildMember member)
     {
-        if (member == null || member.CurrentAction != GuildAction.Explore)
+        if (member == null || member.CurrentAction != GuildAction.Explore || HasActiveRun(member))
         {
             return false;
         }
 
         _activeRuns.Add(new DungeonRun(member));
+        member.SetInDungeonRun(true);
         return true;
     }
 
@@ -46,6 +66,7 @@ public class DungeonSystem
             if (IsExplorationFailed(run))
             {
                 ApplyFailurePenalty(run.Member);
+                run.Member.SetInDungeonRun(false);
                 run.Member.ClearAction();
                 _activeRuns.RemoveAt(i);
                 continue;
@@ -55,6 +76,7 @@ public class DungeonSystem
             state.AddClearedDungeonFloor();
             if (!run.MoveToNextFloor())
             {
+                run.Member.SetInDungeonRun(false);
                 run.Member.ClearAction();
                 _activeRuns.RemoveAt(i);
             }

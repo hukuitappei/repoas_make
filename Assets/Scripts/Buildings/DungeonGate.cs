@@ -8,13 +8,17 @@ public class DungeonGate : BuildingBase
 
     public override void OnTurnStart(GameState state)
     {
-        if (state == null || !IsActive)
+        if (state == null)
         {
             return;
         }
 
-        state.UnlockDungeonExploration();
-        int currentBonus = GetRewardBonus();
+        if (IsActive)
+        {
+            state.UnlockDungeonExploration();
+        }
+
+        int currentBonus = IsActive ? GetRewardBonus() : 0;
         state.AddDungeonRewardPercentBonus(currentBonus - _appliedDungeonRewardPercentBonus);
         _appliedDungeonRewardPercentBonus = currentBonus;
     }

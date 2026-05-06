@@ -164,6 +164,11 @@ public class GameState
         TurnResearchSpeedBonusPercent += amount;
     }
 
+    public void ResetTurnResearchSpeedBonus()
+    {
+        TurnResearchSpeedBonusPercent = 0;
+    }
+
     public void AddHireCostReductionPercent(int amount)
     {
         HireCostReductionPercent = Clamp(HireCostReductionPercent + amount, 0, 100);

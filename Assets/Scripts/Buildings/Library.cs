@@ -8,12 +8,12 @@ public class Library : BuildingBase
 
     public override void OnTurnStart(GameState state)
     {
-        if (state == null || !IsActive)
+        if (state == null)
         {
             return;
         }
 
-        int currentBonus = GetEffectValue();
+        int currentBonus = IsActive ? GetEffectValue() : 0;
         state.AddResearchSpeedPercentBonus(currentBonus - _appliedResearchSpeedPercentBonus);
         _appliedResearchSpeedPercentBonus = currentBonus;
     }

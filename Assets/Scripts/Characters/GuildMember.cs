@@ -12,6 +12,7 @@ public class GuildMember
     public bool IsAvailable { get; private set; }
     public int TemporaryCombatPenaltyPercent { get; private set; }
     public int TemporaryCombatPenaltyRemainingTurns { get; private set; }
+    public bool IsInDungeonRun { get; private set; }
 
     public int RequiredExperience => Level * 100;
     public int CurrentCombatPower => ApplyPenalty(CombatPower, TemporaryCombatPenaltyPercent);
@@ -59,6 +60,11 @@ public class GuildMember
             CombatPower += CombatPowerGrowth;
             SkillPower += SkillPowerGrowth;
         }
+    }
+
+    public void SetInDungeonRun(bool value)
+    {
+        IsInDungeonRun = value;
     }
 
     public void ApplyTemporaryCombatPenaltyPercent(int penaltyPercent, int turns)

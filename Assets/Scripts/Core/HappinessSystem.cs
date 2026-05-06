@@ -58,7 +58,7 @@ public class HappinessSystem
                 continue;
             }
 
-            if (building.Data.effectType == BuildingEffectType.HappinessBonus || building.Data.effectType == BuildingEffectType.MoraleBonus)
+            if (building.Data.effectType == BuildingEffectType.MoraleBonus)
             {
                 totalLevel += building.Level;
             }

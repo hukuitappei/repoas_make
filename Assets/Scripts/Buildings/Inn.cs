@@ -8,12 +8,12 @@ public class Inn : BuildingBase
 
     public override void OnTurnStart(GameState state)
     {
-        if (state == null || !IsActive)
+        if (state == null)
         {
             return;
         }
 
-        int currentReduction = GetEffectValue();
+        int currentReduction = IsActive ? GetEffectValue() : 0;
         state.AddHireCostReductionPercent(currentReduction - _appliedHireCostReductionPercent);
         _appliedHireCostReductionPercent = currentReduction;
     }

@@ -8,12 +8,12 @@ public class House : BuildingBase
 
     public override void OnTurnStart(GameState state)
     {
-        if (state == null || !IsActive)
+        if (state == null)
         {
             return;
         }
 
-        int currentBonus = GetEffectValue();
+        int currentBonus = IsActive ? GetEffectValue() : 0;
         state.AddPopulationCapacity(currentBonus - _appliedPopulationCapacityBonus);
         _appliedPopulationCapacityBonus = currentBonus;
     }

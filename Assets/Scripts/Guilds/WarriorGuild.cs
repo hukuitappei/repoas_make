@@ -32,7 +32,7 @@ public class WarriorGuild : GuildBase
             }
 
             member.AdvanceTurnStatus();
-            if (member.CurrentAction == GuildAction.Idle)
+            if (member.CurrentAction == GuildAction.Idle || member.IsInDungeonRun)
             {
                 continue;
             }

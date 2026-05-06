@@ -8,12 +8,12 @@ public class Plaza : BuildingBase
 
     public override void OnTurnStart(GameState state)
     {
-        if (state == null || !IsActive)
+        if (state == null)
         {
             return;
         }
 
-        int currentBonus = GetEffectValue();
+        int currentBonus = IsActive ? GetEffectValue() : 0;
         state.AddHappinessBonus(currentBonus - _appliedHappinessBonus);
         _appliedHappinessBonus = currentBonus;
     }

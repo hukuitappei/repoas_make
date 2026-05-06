@@ -11,7 +11,13 @@ public class Farm : BuildingBase
             return;
         }
 
-        state.AddFood(GetEffectValue());
+        int amount = GetEffectValue();
+        if (state.FoodProductionPercentBonus > 0)
+        {
+            amount += amount * state.FoodProductionPercentBonus / 100;
+        }
+
+        state.AddFood(amount);
     }
 
     public override void OnTurnEnd(GameState state)
