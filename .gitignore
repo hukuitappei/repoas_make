@@ -1,11 +1,81 @@
-# Claude Code local settings
+# ===========================
+# Claude Code ローカル設定
+# ===========================
 .claude/
 
-# GameMaker IDE generated files
-.import/
-*.lock
-Temp/
+# ===========================
+# Unity 生成ファイル
+# ===========================
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emory[Cc]aptures/
 
-# OS files
-Thumbs.db
+# ===========================
+# Unity 6.x 固有
+# ===========================
+/[Aa]ssets/[Aa]ddressables/[Ss]treaming[Aa]ssets/aa.meta
+/[Aa]ssets/[Ss]treamingAssets/aa.meta
+
+# ===========================
+# ビルド成果物
+# ===========================
+[Aa]pp/
+*.apk
+*.aab
+*.unitypackage
+*.app
+
+# ===========================
+# Visual Studio
+# ===========================
+.vs/
+*.pidb
+*.suo
+*.user
+*.userprefs
+*.pidb.meta
+*.suo.meta
+*.user.meta
+*.csproj
+*.unityproj
+*.sln
+*.pdb
+*.opendb
+*.VC.db
+ExportedObj/
+
+# ===========================
+# JetBrains Rider
+# ===========================
+.idea/
+*.sln.DotSettings.user
+
+# ===========================
+# OS 生成ファイル
+# ===========================
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+*.lnk
+
+# ===========================
+# Node（将来のツール用）
+# ===========================
+node_modules/
+
+# ===========================
+# シークレット / ローカル設定
+# ===========================
+*.env
+.env.local
+secrets.json
