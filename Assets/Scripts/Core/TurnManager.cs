@@ -37,7 +37,9 @@ public class TurnManager
         _guildManager.ResolveActions(_state);
         _happinessSystem.Recalculate(_state);
         _raidSystem.ResolveRaidCheck(_state);
+        _dungeonSystem.StartAssignedDungeonRuns(_state);
         _dungeonSystem.ResolveExplorationProgress(_state);
+        _researchTree.StartAssignedResearch(_state);
         _researchTree.AdvanceResearch(_state);
         ResolveBuildingsTurnEnd();
         _state.AdvanceTurn();

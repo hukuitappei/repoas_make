@@ -30,6 +30,8 @@ public static class GameConstants
     public const int EXPLORATION_FAILURE_PROGRESS = 34;
     public const int EXPLORATION_SUCCESS_PROGRESS = 50;
     public const float EXPLORATION_SUCCESS_RATE = 0.6f;
+    public const string EXPLORATION_TARGET_RAID_ORIGIN = "raid_origin";
+    public const string EXPLORATION_TARGET_DUNGEON = "dungeon";
 
     public const int DUNGEON_FLOOR_COUNT = 5;
     public const int DUNGEON_TURNS_PER_FLOOR = 3;
@@ -47,4 +49,7 @@ public static class GameConstants
     public const float OVERCROWDING_START_RATIO = 0.9f;
     public const int OVERCROWDING_MAX_PENALTY = -20;
     public const int FUNDS_NEGATIVE_PENALTY = -10;
+
+    public const string EXPLORATION_TARGET_RAID_ORIGIN = "raid_origin";
+    public const string EXPLORATION_TARGET_DUNGEON = "dungeon";
 }

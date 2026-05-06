@@ -32,7 +32,7 @@ public class CraftsmanGuild : GuildBase
             }
 
             member.AdvanceTurnStatus();
-            if (member.CurrentAction == GuildAction.Idle)
+            if (member.CurrentAction == GuildAction.Idle || member.IsInDungeonRun)
             {
                 continue;
             }
@@ -40,7 +40,6 @@ public class CraftsmanGuild : GuildBase
             GuildAction action = member.CurrentAction;
             bool isSuccess = ApplyActionResult(state, member, action);
             member.AddExperience(GetExperience(action, isSuccess, state != null ? state.GuildMoraleBonus : 0));
-            member.ClearAction();
         }
     }
 
@@ -82,7 +81,7 @@ public class CraftsmanGuild : GuildBase
             return true;
         }
 
-        if (action == GuildAction.Explore)
+        if (action == GuildAction.Explore && member.CurrentActionTargetId == GameConstants.EXPLORATION_TARGET_RAID_ORIGIN)
         {
             bool isSuccess = Random.NextDouble() < GameConstants.EXPLORATION_SUCCESS_RATE;
             state.AddInitialRaidOriginExplorationProgress(isSuccess ? GameConstants.EXPLORATION_SUCCESS_PROGRESS : GameConstants.EXPLORATION_FAILURE_PROGRESS);

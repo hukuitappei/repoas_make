@@ -8,6 +8,7 @@ public class GameBootstrap : MonoBehaviour
     [SerializeField] private GuildData[] guildCatalog;
     [SerializeField] private BuildingData[] availableBuildings;
     [SerializeField] private BuildingData[] startingBuildings;
+    [SerializeField] private EventData[] eventCatalog;
 
     private GameManager _gameManager;
     private MapData _mapData;
@@ -22,6 +23,7 @@ public class GameBootstrap : MonoBehaviour
 
         InitializeGuilds();
         InitializeStartingBuildings();
+        InitializeEvents();
 
         if (mainGameScreen != null)
         {
@@ -111,6 +113,19 @@ public class GameBootstrap : MonoBehaviour
             case BuildingEffectType.MoraleBonus:
                 building.OnTurnStart(_gameManager.State);
                 break;
+        }
+    }
+
+    private void InitializeEvents()
+    {
+        if (_gameManager == null || _gameManager.EventSystem == null || eventCatalog == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < eventCatalog.Length; i++)
+        {
+            _gameManager.EventSystem.RegisterEvent(eventCatalog[i]);
         }
     }
 

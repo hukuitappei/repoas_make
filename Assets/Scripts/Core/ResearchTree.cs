@@ -6,6 +6,7 @@ public class ResearchTree
     private readonly List<ResearchProgress> _activeResearch;
 
     public IReadOnlyList<ResearchProgress> ActiveResearch => _activeResearch;
+    public IEnumerable<ResearchNodeData> RegisteredNodes => _nodes.Values;
 
     public ResearchTree()
     {
@@ -92,6 +93,57 @@ public class ResearchTree
 
             CompleteResearch(state, progress.NodeData);
             _activeResearch.RemoveAt(i);
+        }
+    }
+
+    public void StartAssignedResearch(GameState state)
+    {
+        if (state == null)
+        {
+            return;
+        }
+
+        Dictionary<string, int> assignedWorkersByNodeId = new Dictionary<string, int>();
+        int totalAssignedResearchWorkers = 0;
+        for (int i = 0; i < state.Guilds.Count; i++)
+        {
+            GuildBase guild = state.Guilds[i];
+            if (guild == null)
+            {
+                continue;
+            }
+
+            for (int j = 0; j < guild.Members.Count; j++)
+            {
+                GuildMember member = guild.Members[j];
+                if (member == null || member.CurrentAction != GuildAction.Research || string.IsNullOrEmpty(member.CurrentActionTargetId))
+                {
+                    continue;
+                }
+
+                totalAssignedResearchWorkers++;
+                if (!assignedWorkersByNodeId.ContainsKey(member.CurrentActionTargetId))
+                {
+                    assignedWorkersByNodeId[member.CurrentActionTargetId] = 0;
+                }
+
+                assignedWorkersByNodeId[member.CurrentActionTargetId]++;
+            }
+        }
+
+        foreach (KeyValuePair<string, int> pair in assignedWorkersByNodeId)
+        {
+            if (!_nodes.TryGetValue(pair.Key, out ResearchNodeData nodeData))
+            {
+                continue;
+            }
+
+            if (pair.Value < nodeData.requiredWorkers)
+            {
+                continue;
+            }
+
+            StartResearch(state, pair.Key, totalAssignedResearchWorkers);
         }
     }
 

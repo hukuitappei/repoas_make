@@ -37,7 +37,10 @@ public class DungeonSystem
 
     public bool StartExploration(GuildMember member)
     {
-        if (member == null || member.CurrentAction != GuildAction.Explore || HasActiveRun(member))
+        if (member == null
+            || member.CurrentAction != GuildAction.Explore
+            || member.CurrentActionTargetId != GameConstants.EXPLORATION_TARGET_DUNGEON
+            || HasActiveRun(member))
         {
             return false;
         }
@@ -45,6 +48,37 @@ public class DungeonSystem
         _activeRuns.Add(new DungeonRun(member));
         member.SetInDungeonRun(true);
         return true;
+    }
+
+    public void StartAssignedDungeonRuns(GameState state)
+    {
+        if (state == null || !state.IsDungeonExplorationUnlocked || !state.IsInitialRaidOriginExplored)
+        {
+            return;
+        }
+
+        for (int i = 0; i < state.Guilds.Count; i++)
+        {
+            GuildBase guild = state.Guilds[i];
+            if (guild == null)
+            {
+                continue;
+            }
+
+            for (int j = 0; j < guild.Members.Count; j++)
+            {
+                GuildMember member = guild.Members[j];
+                if (member == null
+                    || member.IsInDungeonRun
+                    || member.CurrentAction != GuildAction.Explore
+                    || member.CurrentActionTargetId != GameConstants.EXPLORATION_TARGET_DUNGEON)
+                {
+                    continue;
+                }
+
+                StartExploration(member);
+            }
+        }
     }
 
     public void ResolveExplorationProgress(GameState state)

@@ -9,6 +9,7 @@ public class GuildMember
     public int CombatPowerGrowth { get; private set; }
     public int SkillPowerGrowth { get; private set; }
     public GuildAction CurrentAction { get; private set; }
+    public string CurrentActionTargetId { get; private set; }
     public bool IsAvailable { get; private set; }
     public int TemporaryCombatPenaltyPercent { get; private set; }
     public int TemporaryCombatPenaltyRemainingTurns { get; private set; }
@@ -30,18 +31,31 @@ public class GuildMember
         CombatPowerGrowth = guildData != null ? guildData.combatPowerGrowth : 0;
         SkillPowerGrowth = guildData != null ? guildData.skillPowerGrowth : 0;
         CurrentAction = GuildAction.Idle;
+        CurrentActionTargetId = string.Empty;
         IsAvailable = true;
     }
 
     public void AssignAction(GuildAction action)
     {
+        AssignAction(action, CurrentActionTargetId);
+    }
+
+    public void AssignAction(GuildAction action, string targetId)
+    {
         CurrentAction = action;
+        CurrentActionTargetId = targetId ?? string.Empty;
         IsAvailable = action == GuildAction.Idle;
+    }
+
+    public void SetActionTarget(string targetId)
+    {
+        CurrentActionTargetId = targetId ?? string.Empty;
     }
 
     public void ClearAction()
     {
         CurrentAction = GuildAction.Idle;
+        CurrentActionTargetId = string.Empty;
         IsAvailable = true;
     }
 

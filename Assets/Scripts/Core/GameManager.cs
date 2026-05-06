@@ -1,5 +1,7 @@
 public class GameManager
 {
+    public string LastTurnWarningMessage { get; private set; }
+
     public GameState State { get; private set; }
     public TurnManager TurnManager { get; private set; }
     public ResourceManager ResourceManager { get; private set; }
@@ -41,19 +43,30 @@ public class GameManager
             return;
         }
 
+        LastTurnWarningMessage = BuildIdleWarningMessage();
+        if (!string.IsNullOrEmpty(LastTurnWarningMessage))
+        {
+            UnityEngine.Debug.LogWarning(LastTurnWarningMessage);
+        }
+
         TurnManager.AdvanceTurn();
         EvaluateGameEnd();
     }
 
-    public bool TryAssignGuildAction(GuildBase guild, GuildMember member, GuildAction action)
+    public bool TryAssignGuildAction(GuildBase guild, GuildMember member, GuildAction action, string targetId = null)
     {
         if (State == null || guild == null || member == null)
         {
             return false;
         }
 
+        if (targetId != null)
+        {
+            member.SetActionTarget(targetId);
+        }
+
         guild.AssignAction(member, action);
-        return member.CurrentAction == action;
+        return member.CurrentAction == action && (targetId == null || member.CurrentActionTargetId == targetId);
     }
 
     public GuildMember FindFirstMemberByAction(GuildAction action)
@@ -84,6 +97,40 @@ public class GameManager
         return null;
     }
 
+    public string BuildIdleWarningMessage()
+    {
+        if (State == null)
+        {
+            return string.Empty;
+        }
+
+        System.Collections.Generic.List<string> idleMembers = new System.Collections.Generic.List<string>();
+        for (int i = 0; i < State.Guilds.Count; i++)
+        {
+            GuildBase guild = State.Guilds[i];
+            if (guild == null)
+            {
+                continue;
+            }
+
+            for (int j = 0; j < guild.Members.Count; j++)
+            {
+                GuildMember member = guild.Members[j];
+                if (member != null && member.CurrentAction == GuildAction.Idle && !member.IsInDungeonRun)
+                {
+                    idleMembers.Add(member.Name);
+                }
+            }
+        }
+
+        if (idleMembers.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        return "警告: 待機中のメンバーがいます - " + string.Join(", ", idleMembers);
+    }
+
     public bool TryStartDungeonExploration(GuildMember member, out string reason)
     {
         if (State == null || DungeonSystem == null)
@@ -94,30 +141,42 @@ public class GameManager
 
         if (!State.IsDungeonExplorationUnlocked)
         {
-            reason = "Dungeon exploration is locked.";
+            reason = "ダンジョン探索は未解放です。";
+            return false;
+        }
+
+        if (!State.IsInitialRaidOriginExplored)
+        {
+            reason = "襲撃元の探索が完了していません。";
             return false;
         }
 
         if (member == null)
         {
-            reason = "No explorer is selected.";
+            reason = "探索担当が選ばれていません。";
             return false;
         }
 
         if (member.CurrentAction != GuildAction.Explore)
         {
-            reason = member.Name + " is not assigned to Explore.";
+            reason = member.Name + " が探索担当になっていません。";
+            return false;
+        }
+
+        if (member.CurrentActionTargetId != GameConstants.EXPLORATION_TARGET_DUNGEON)
+        {
+            reason = member.Name + " の探索対象がダンジョンになっていません。";
             return false;
         }
 
         if (DungeonSystem.HasActiveRun(member))
         {
-            reason = member.Name + " is already in a dungeon run.";
+            reason = member.Name + " は既にダンジョン攻略中です。";
             return false;
         }
 
         bool started = DungeonSystem.StartExploration(member);
-        reason = started ? member.Name + " entered the dungeon." : "Failed to start the dungeon run.";
+        reason = started ? member.Name + " がダンジョンに突入しました。" : "ダンジョン攻略を開始できませんでした。";
         return started;
     }
 

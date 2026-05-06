@@ -12,6 +12,7 @@ public static class InitialDataAssetGenerator
     private const string BuildingsFolder = RootFolder + "/Buildings";
     private const string GuildsFolder = RootFolder + "/Guilds";
     private const string ResearchFolder = RootFolder + "/Research";
+    private const string EventsFolder = RootFolder + "/Events";
 
     [MenuItem("repoas/Create Initial Data Assets")]
     public static void CreateInitialDataAssets()
@@ -20,10 +21,12 @@ public static class InitialDataAssetGenerator
         EnsureFolder(RootFolder, "Buildings");
         EnsureFolder(RootFolder, "Guilds");
         EnsureFolder(RootFolder, "Research");
+        EnsureFolder(RootFolder, "Events");
 
         CreateBuildingAssets();
         CreateGuildAssets();
         CreateResearchNodeAssets();
+        CreateEventAssets();
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
@@ -84,6 +87,7 @@ public static class InitialDataAssetGenerator
         {
             LoadAsset<BuildingData>(BuildingsFolder + "/DungeonGate.asset")
         });
+        AssignArray(serializedBootstrap, "eventCatalog", FindAssetsByType<EventData>(EventsFolder));
         serializedBootstrap.ApplyModifiedPropertiesWithoutUndo();
 
         EditorUtility.SetDirty(bootstrap);
@@ -874,6 +878,82 @@ public static class InitialDataAssetGenerator
     private static MaterialRequirement[] Requirements(params MaterialRequirement[] requirements)
     {
         return requirements;
+    }
+
+    private static void CreateEventAssets()
+    {
+        CreateEvent("e_harvest_good", "豊作", "今年は各地で作物が豊富に実った。",
+            0.08f, 5, null,
+            E(EventEffectType.AddFood, 400));
+
+        CreateEvent("e_drought", "干ばつ", "長引く旱魃が農作物に深刻な打撃を与えた。",
+            0.06f, 8, null,
+            E(EventEffectType.AddFood, -300));
+
+        CreateEvent("e_flood", "洪水", "大雨による洪水で農地と蓄えが被害を受けた。",
+            0.05f, 8, null,
+            E(EventEffectType.AddFood, -200),
+            E(EventEffectType.AddFunds, -50));
+
+        CreateEvent("e_merchant", "交易商人来訪", "遠方から商人が訪れ、取引で資金が増えた。",
+            0.10f, 5, null,
+            E(EventEffectType.AddFunds, 150));
+
+        CreateEvent("e_migrants", "移住者の波", "高い幸福度に惹かれ、各地から人々が移り住んできた。",
+            0.15f, 6, new[] { "happiness_high" },
+            E(EventEffectType.AddPopulation, 20));
+
+        CreateEvent("e_discontent", "民衆の不満", "不満が高まり、抗議活動と働き手の離脱が起きた。",
+            0.20f, 9, new[] { "happiness_low" },
+            E(EventEffectType.AddHappiness, -10),
+            E(EventEffectType.AddFunds, -80));
+
+        CreateEvent("e_epidemic", "疫病の流行", "原因不明の疫病が広まり、多くの住民が倒れた。",
+            0.04f, 10, null,
+            E(EventEffectType.AddPopulation, -30));
+
+        CreateEvent("e_materials_found", "素材発見", "近隣の森で良質な木材が大量に発見された。",
+            0.08f, 5, null,
+            EM(MaterialType.Wood, MaterialGrade.F, 60));
+    }
+
+    private static void CreateEvent(string eventId, string displayName, string description,
+        float probability, int priority, string[] prerequisites, params EventEffect[] effects)
+    {
+        string path = EventsFolder + "/" + eventId + ".asset";
+        EventData existing = AssetDatabase.LoadAssetAtPath<EventData>(path);
+        if (existing != null)
+        {
+            return;
+        }
+
+        EventData data = ScriptableObject.CreateInstance<EventData>();
+        data.eventId = eventId;
+        data.displayName = displayName;
+        data.description = description;
+        data.baseProbability = probability;
+        data.priority = priority;
+        data.prerequisiteConditions = prerequisites ?? Array.Empty<string>();
+        data.effects = effects;
+        data.choices = Array.Empty<EventChoice>();
+
+        AssetDatabase.CreateAsset(data, path);
+    }
+
+    private static EventEffect E(EventEffectType type, int amount)
+    {
+        return new EventEffect { effectType = type, amount = amount };
+    }
+
+    private static EventEffect EM(MaterialType materialType, MaterialGrade grade, int amount)
+    {
+        return new EventEffect
+        {
+            effectType = EventEffectType.AddMaterial,
+            materialType = materialType,
+            materialGrade = grade,
+            amount = amount
+        };
     }
 
     private static void EnsureFolder(string parentFolder, string childFolder)

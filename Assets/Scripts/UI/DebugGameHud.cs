@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class DebugGameHud : MonoBehaviour
@@ -6,6 +7,9 @@ public class DebugGameHud : MonoBehaviour
 
     private Vector2 _scroll;
     private int _selectedMemberIndex;
+    private string _latestMessage;
+    private int _selectedResearchNodeIndex;
+    private int _selectedConstructTargetIndex;
 
     private void Awake()
     {
@@ -25,7 +29,7 @@ public class DebugGameHud : MonoBehaviour
         }
 
         GameState state = gameManager.State;
-        GUILayout.BeginArea(new Rect(16f, 16f, 580f, Screen.height - 32f), GUI.skin.box);
+        GUILayout.BeginArea(new Rect(16f, 16f, 700f, Screen.height - 32f), GUI.skin.box);
         _scroll = GUILayout.BeginScrollView(_scroll);
 
         GUILayout.Label($"ターン: {state.CurrentTurn} / {GameConstants.MAX_TURNS}");
@@ -33,8 +37,12 @@ public class DebugGameHud : MonoBehaviour
         GUILayout.Space(8f);
 
         GUILayout.Label($"食料 {state.Food} / 資金 {state.Funds} / 人口 {state.Population}/{state.PopulationCapacity} / 幸福度 {state.Happiness}");
-        GUILayout.Label($"襲撃元探索: {state.InitialRaidOriginExplorationProgress}% / ダンジョン: {(state.IsDungeonExplorationUnlocked ? "解放済み" : "未解放")}");
+        GUILayout.Label($"襲撃元探索: {state.InitialRaidOriginExplorationProgress}% / ダンジョン: {(state.IsDungeonExplorationUnlocked ? "解放済み" : "未解放")} / 発見: {(state.IsInitialRaidOriginExplored ? "済" : "未")}");
         GUILayout.Label($"進行中ダンジョン: {(gameManager.DungeonSystem != null ? gameManager.DungeonSystem.ActiveRuns.Count : 0)}");
+        GUILayout.Space(4f);
+
+        DrawWarningBox(gameManager.BuildIdleWarningMessage());
+        DrawLatestMessageBox();
         GUILayout.Space(12f);
 
         DrawMapSection();
@@ -48,10 +56,40 @@ public class DebugGameHud : MonoBehaviour
         if (GUILayout.Button("ターン終了", GUILayout.Height(32f)))
         {
             gameManager.AdvanceTurn();
+            _latestMessage = string.IsNullOrEmpty(gameManager.LastTurnWarningMessage)
+                ? "ターンを進行しました。"
+                : gameManager.LastTurnWarningMessage;
         }
 
         GUILayout.EndScrollView();
         GUILayout.EndArea();
+    }
+
+    private void DrawWarningBox(string warningMessage)
+    {
+        if (!string.IsNullOrEmpty(warningMessage))
+        {
+            GUI.color = new Color(1f, 0.93f, 0.55f);
+            GUILayout.Box("警告\n" + warningMessage, GUILayout.MinHeight(56f));
+            GUI.color = Color.white;
+            return;
+        }
+
+        GUI.color = new Color(0.78f, 0.95f, 0.78f);
+        GUILayout.Box("警告\n待機中メンバーはいません。", GUILayout.MinHeight(56f));
+        GUI.color = Color.white;
+    }
+
+    private void DrawLatestMessageBox()
+    {
+        if (string.IsNullOrEmpty(_latestMessage))
+        {
+            return;
+        }
+
+        GUI.color = new Color(0.8f, 0.9f, 1f);
+        GUILayout.Box("最新メッセージ\n" + _latestMessage, GUILayout.MinHeight(56f));
+        GUI.color = Color.white;
     }
 
     private void DrawGuildSection(GameManager gameManager)
@@ -64,41 +102,39 @@ public class DebugGameHud : MonoBehaviour
             return;
         }
 
-        if (_selectedMemberIndex >= memberCount)
-        {
-            _selectedMemberIndex = memberCount - 1;
-        }
-
-        if (_selectedMemberIndex < 0)
-        {
-            _selectedMemberIndex = 0;
-        }
+        ClampSelectedMemberIndex(memberCount);
 
         if (TryGetSelectedMember(gameManager.State, _selectedMemberIndex, out GuildBase guild, out GuildMember member))
         {
             GUILayout.Label($"選択中: {guild.GuildName} / {member.Name} / Lv.{member.Level} / 行動 {member.CurrentAction}");
             GUILayout.Label($"戦闘 {member.CurrentCombatPower} / 技能 {member.CurrentSkillPower} / 経験値 {member.Experience}/{member.RequiredExperience}");
-        }
+            GUILayout.Label($"対象: {FormatActionTarget(member)}");
 
-        GUILayout.BeginHorizontal();
-        if (GUILayout.Button("前", GUILayout.Width(60f)))
-        {
-            _selectedMemberIndex = (_selectedMemberIndex - 1 + memberCount) % memberCount;
-        }
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("前", GUILayout.Width(60f)))
+            {
+                _selectedMemberIndex = (_selectedMemberIndex - 1 + memberCount) % memberCount;
+            }
 
-        if (GUILayout.Button("次", GUILayout.Width(60f)))
-        {
-            _selectedMemberIndex = (_selectedMemberIndex + 1) % memberCount;
-        }
-        GUILayout.EndHorizontal();
+            if (GUILayout.Button("次", GUILayout.Width(60f)))
+            {
+                _selectedMemberIndex = (_selectedMemberIndex + 1) % memberCount;
+            }
+            GUILayout.EndHorizontal();
 
-        GUILayout.BeginHorizontal();
-        DrawActionButton(gameManager, guild, member, GuildAction.Idle, "待機");
-        DrawActionButton(gameManager, guild, member, GuildAction.Defend, "防衛");
-        DrawActionButton(gameManager, guild, member, GuildAction.Explore, "探索");
-        DrawActionButton(gameManager, guild, member, GuildAction.Research, "研究");
-        DrawActionButton(gameManager, guild, member, GuildAction.Construct, "建設");
-        GUILayout.EndHorizontal();
+            GUILayout.BeginHorizontal();
+            DrawActionButton(gameManager, guild, member, GuildAction.Idle, null, "待機");
+            DrawActionButton(gameManager, guild, member, GuildAction.Defend, null, "防衛");
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            DrawActionButton(gameManager, guild, member, GuildAction.Explore, GameConstants.EXPLORATION_TARGET_RAID_ORIGIN, "襲撃元探索");
+            DrawActionButton(gameManager, guild, member, GuildAction.Explore, GameConstants.EXPLORATION_TARGET_DUNGEON, "ダンジョン探索");
+            GUILayout.EndHorizontal();
+
+            DrawResearchTargetControls(gameManager, guild, member);
+            DrawConstructTargetControls(gameManager, guild, member);
+        }
 
         GUILayout.Space(6f);
         for (int i = 0; i < gameManager.State.Guilds.Count; i++)
@@ -110,7 +146,103 @@ public class DebugGameHud : MonoBehaviour
             }
 
             GUILayout.Label($"{currentGuild.GuildName} {currentGuild.Members.Count}/{currentGuild.MaxMembers} {(currentGuild.IsUnlocked ? "解放済み" : "未解放")} / 戦力 {currentGuild.CalculateCombatPower()}");
+            for (int j = 0; j < currentGuild.Members.Count; j++)
+            {
+                GuildMember currentMember = currentGuild.Members[j];
+                if (currentMember == null)
+                {
+                    continue;
+                }
+
+                string suffix = currentMember.IsInDungeonRun ? " / ダンジョン中" : string.Empty;
+                GUILayout.Label($"  - {currentMember.Name} / 行動 {currentMember.CurrentAction} / 対象 {FormatActionTarget(currentMember)}{suffix}");
+            }
         }
+    }
+
+    private void DrawResearchTargetControls(GameManager gameManager, GuildBase guild, GuildMember member)
+    {
+        List<ResearchNodeData> nodes = new List<ResearchNodeData>(gameManager.ResearchTree.RegisteredNodes);
+        if (nodes.Count == 0)
+        {
+            GUILayout.Label("研究対象: 研究ノード未登録");
+            return;
+        }
+
+        if (_selectedResearchNodeIndex >= nodes.Count)
+        {
+            _selectedResearchNodeIndex = 0;
+        }
+
+        ResearchNodeData selectedNode = nodes[_selectedResearchNodeIndex];
+        GUILayout.Label("研究対象");
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("研究前", GUILayout.Width(60f)))
+        {
+            _selectedResearchNodeIndex = (_selectedResearchNodeIndex - 1 + nodes.Count) % nodes.Count;
+        }
+
+        if (GUILayout.Button("研究次", GUILayout.Width(60f)))
+        {
+            _selectedResearchNodeIndex = (_selectedResearchNodeIndex + 1) % nodes.Count;
+        }
+
+        if (GUILayout.Button("研究に設定", GUILayout.Width(120f)))
+        {
+            if (gameManager.TryAssignGuildAction(guild, member, GuildAction.Research, selectedNode.nodeId))
+            {
+                _latestMessage = $"{member.Name} の研究対象を {selectedNode.displayName} に設定しました。";
+            }
+        }
+        GUILayout.EndHorizontal();
+        GUILayout.Label($"候補: {selectedNode.displayName} ({selectedNode.nodeId})");
+    }
+
+    private void DrawConstructTargetControls(GameManager gameManager, GuildBase guild, GuildMember member)
+    {
+        List<BuildingBase> buildings = new List<BuildingBase>();
+        for (int i = 0; i < gameManager.State.Buildings.Count; i++)
+        {
+            BuildingBase building = gameManager.State.Buildings[i];
+            if (building != null)
+            {
+                buildings.Add(building);
+            }
+        }
+
+        if (buildings.Count == 0)
+        {
+            GUILayout.Label("建設対象: 建物なし");
+            return;
+        }
+
+        if (_selectedConstructTargetIndex >= buildings.Count)
+        {
+            _selectedConstructTargetIndex = 0;
+        }
+
+        BuildingBase selectedBuilding = buildings[_selectedConstructTargetIndex];
+        GUILayout.Label("建設対象");
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("建設前", GUILayout.Width(60f)))
+        {
+            _selectedConstructTargetIndex = (_selectedConstructTargetIndex - 1 + buildings.Count) % buildings.Count;
+        }
+
+        if (GUILayout.Button("建設次", GUILayout.Width(60f)))
+        {
+            _selectedConstructTargetIndex = (_selectedConstructTargetIndex + 1) % buildings.Count;
+        }
+
+        if (GUILayout.Button("建設に設定", GUILayout.Width(120f)))
+        {
+            if (gameManager.TryAssignGuildAction(guild, member, GuildAction.Construct, selectedBuilding.Name))
+            {
+                _latestMessage = $"{member.Name} の建設対象を {selectedBuilding.Name} に設定しました。";
+            }
+        }
+        GUILayout.EndHorizontal();
+        GUILayout.Label($"候補: {selectedBuilding.Name} Lv.{selectedBuilding.Level}/{selectedBuilding.MaxLevel}");
     }
 
     private void DrawMapSection()
@@ -130,23 +262,17 @@ public class DebugGameHud : MonoBehaviour
     private void DrawExplorationSection(GameManager gameManager)
     {
         GameState state = gameManager.State;
-        GUILayout.Label("探索");
+        GUILayout.Label("探索状況");
 
-        GUILayout.BeginHorizontal();
-        if (GUILayout.Button("襲撃元を探索", GUILayout.Width(140f)))
-        {
-            bool success = gameManager.RaidSystem != null && gameManager.RaidSystem.ExploreInitialRaidOrigin(state);
-            Debug.Log(success ? "襲撃元探索に成功しました。" : "襲撃元探索に失敗しました。");
-        }
-
-        if (GUILayout.Button("ダンジョン開始", GUILayout.Width(140f)))
+        if (GUILayout.Button("ダンジョン突入を試行", GUILayout.Width(180f)))
         {
             GuildMember explorer = gameManager.FindFirstMemberByAction(GuildAction.Explore);
             bool success = gameManager.TryStartDungeonExploration(explorer, out string reason);
-            Debug.Log(success ? "ダンジョン開始: " + reason : "ダンジョン開始失敗: " + reason);
+            _latestMessage = success ? "ダンジョン開始: " + reason : "ダンジョン開始失敗: " + reason;
+            Debug.Log(_latestMessage);
         }
-        GUILayout.EndHorizontal();
 
+        GUILayout.Label($"襲撃元発見: {(state.IsInitialRaidOriginExplored ? "済" : "未")} / 進行 {state.InitialRaidOriginExplorationProgress}%");
         if (gameManager.DungeonSystem != null)
         {
             for (int i = 0; i < gameManager.DungeonSystem.ActiveRuns.Count; i++)
@@ -162,12 +288,48 @@ public class DebugGameHud : MonoBehaviour
         }
     }
 
-    private void DrawActionButton(GameManager gameManager, GuildBase guild, GuildMember member, GuildAction action, string label)
+    private void DrawActionButton(GameManager gameManager, GuildBase guild, GuildMember member, GuildAction action, string targetId, string label)
     {
-        if (GUILayout.Button(label, GUILayout.Width(72f)))
+        if (GUILayout.Button(label, GUILayout.Width(110f)))
         {
-            gameManager.TryAssignGuildAction(guild, member, action);
+            if (gameManager.TryAssignGuildAction(guild, member, action, targetId))
+            {
+                _latestMessage = $"{member.Name} の行動を {label} に変更しました。";
+            }
         }
+    }
+
+    private void ClampSelectedMemberIndex(int memberCount)
+    {
+        if (_selectedMemberIndex >= memberCount)
+        {
+            _selectedMemberIndex = memberCount - 1;
+        }
+
+        if (_selectedMemberIndex < 0)
+        {
+            _selectedMemberIndex = 0;
+        }
+    }
+
+    private static string FormatActionTarget(GuildMember member)
+    {
+        if (member == null || string.IsNullOrEmpty(member.CurrentActionTargetId))
+        {
+            return "未設定";
+        }
+
+        if (member.CurrentActionTargetId == GameConstants.EXPLORATION_TARGET_RAID_ORIGIN)
+        {
+            return "襲撃元";
+        }
+
+        if (member.CurrentActionTargetId == GameConstants.EXPLORATION_TARGET_DUNGEON)
+        {
+            return "ダンジョン";
+        }
+
+        return member.CurrentActionTargetId;
     }
 
     private static int CountMembers(GameState state)

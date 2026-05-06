@@ -38,9 +38,8 @@ public class WarriorGuild : GuildBase
             }
 
             GuildAction action = member.CurrentAction;
-            bool isSuccess = ApplyActionResult(state, action);
+            bool isSuccess = ApplyActionResult(state, member, action);
             member.AddExperience(GetExperience(action, isSuccess, state != null ? state.GuildMoraleBonus : 0));
-            member.ClearAction();
         }
     }
 
@@ -73,14 +72,14 @@ public class WarriorGuild : GuildBase
         return action == GuildAction.Idle || member.IsAvailable;
     }
 
-    private bool ApplyActionResult(GameState state, GuildAction action)
+    private bool ApplyActionResult(GameState state, GuildMember member, GuildAction action)
     {
         if (state == null)
         {
             return false;
         }
 
-        if (action == GuildAction.Explore)
+        if (action == GuildAction.Explore && member != null && member.CurrentActionTargetId == GameConstants.EXPLORATION_TARGET_RAID_ORIGIN)
         {
             bool isSuccess = Random.NextDouble() < GameConstants.EXPLORATION_SUCCESS_RATE;
             state.AddInitialRaidOriginExplorationProgress(isSuccess ? GameConstants.EXPLORATION_SUCCESS_PROGRESS : GameConstants.EXPLORATION_FAILURE_PROGRESS);
