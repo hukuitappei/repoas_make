@@ -1,0 +1,197 @@
+using System.Collections.Generic;
+
+public class ResearchTree
+{
+    private readonly Dictionary<string, ResearchNodeData> _nodes;
+    private readonly List<ResearchProgress> _activeResearch;
+
+    public IReadOnlyList<ResearchProgress> ActiveResearch => _activeResearch;
+
+    public ResearchTree()
+    {
+        _nodes = new Dictionary<string, ResearchNodeData>();
+        _activeResearch = new List<ResearchProgress>();
+    }
+
+    public void RegisterNode(ResearchNodeData nodeData)
+    {
+        if (nodeData == null || string.IsNullOrEmpty(nodeData.nodeId))
+        {
+            return;
+        }
+
+        _nodes[nodeData.nodeId] = nodeData;
+    }
+
+    public bool CanStartResearch(GameState state, string nodeId, int assignedResearchWorkers)
+    {
+        if (state == null || !_nodes.TryGetValue(nodeId, out ResearchNodeData nodeData))
+        {
+            return false;
+        }
+
+        if (state.IsResearchNodeCompleted(nodeId) || IsResearchActive(nodeId))
+        {
+            return false;
+        }
+
+        if (_activeResearch.Count >= assignedResearchWorkers)
+        {
+            return false;
+        }
+
+        if (assignedResearchWorkers < nodeData.requiredWorkers)
+        {
+            return false;
+        }
+
+        if (state.Funds < nodeData.researchCostFunds || state.Food < nodeData.requiredFood)
+        {
+            return false;
+        }
+
+        if (!state.HasMaterials(nodeData.materialRequirements))
+        {
+            return false;
+        }
+
+        return ArePrerequisitesCompleted(state, nodeData);
+    }
+
+    public bool StartResearch(GameState state, string nodeId, int assignedResearchWorkers)
+    {
+        if (!CanStartResearch(state, nodeId, assignedResearchWorkers))
+        {
+            return false;
+        }
+
+        ResearchNodeData nodeData = _nodes[nodeId];
+        state.TrySpendFunds(nodeData.researchCostFunds);
+        state.TrySpendFood(nodeData.requiredFood);
+        state.TryConsumeMaterials(nodeData.materialRequirements);
+        _activeResearch.Add(new ResearchProgress(nodeData));
+        return true;
+    }
+
+    public void AdvanceResearch(GameState state)
+    {
+        if (state == null)
+        {
+            return;
+        }
+
+        int turnResearchBonusPercent = state.ConsumeTurnResearchSpeedBonusPercent();
+        for (int i = _activeResearch.Count - 1; i >= 0; i--)
+        {
+            ResearchProgress progress = _activeResearch[i];
+            progress.Advance(state.ResearchSpeedPercentBonus + turnResearchBonusPercent);
+            if (!progress.IsCompleted())
+            {
+                continue;
+            }
+
+            CompleteResearch(state, progress.NodeData);
+            _activeResearch.RemoveAt(i);
+        }
+    }
+
+    private bool ArePrerequisitesCompleted(GameState state, ResearchNodeData nodeData)
+    {
+        if (nodeData.prerequisiteNodeIds == null)
+        {
+            return true;
+        }
+
+        for (int i = 0; i < nodeData.prerequisiteNodeIds.Length; i++)
+        {
+            if (!state.IsResearchNodeCompleted(nodeData.prerequisiteNodeIds[i]))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private bool IsResearchActive(string nodeId)
+    {
+        for (int i = 0; i < _activeResearch.Count; i++)
+        {
+            ResearchProgress progress = _activeResearch[i];
+            if (progress.NodeData != null && progress.NodeData.nodeId == nodeId)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void CompleteResearch(GameState state, ResearchNodeData nodeData)
+    {
+        if (nodeData == null)
+        {
+            return;
+        }
+
+        state.CompleteResearchNode(nodeData.nodeId);
+        if (!string.IsNullOrEmpty(nodeData.importantResearchGroupId) && IsImportantGroupCompleted(state, nodeData))
+        {
+            state.CompleteImportantResearchGroup(nodeData.importantResearchGroupId, nodeData.importantGroupTier);
+        }
+
+        ApplyEffects(state, nodeData.effects);
+    }
+
+    private bool IsImportantGroupCompleted(GameState state, ResearchNodeData completedNode)
+    {
+        string groupId = completedNode.importantResearchGroupId;
+        foreach (ResearchNodeData node in _nodes.Values)
+        {
+            if (node.importantResearchGroupId == groupId && !state.IsResearchNodeCompleted(node.nodeId))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private void ApplyEffects(GameState state, ResearchEffect[] effects)
+    {
+        if (effects == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < effects.Length; i++)
+        {
+            ResearchEffect effect = effects[i];
+            if (effect == null)
+            {
+                continue;
+            }
+
+            if (effect.effectType == ResearchEffectType.AddBaseFoodProduction)
+            {
+                state.AddBaseFoodProduction(effect.intValue);
+            }
+            else if (effect.effectType == ResearchEffectType.AddFoodProductionPercent)
+            {
+                state.AddFoodProductionPercentBonus(effect.intValue);
+            }
+            else if (effect.effectType == ResearchEffectType.AddResearchSpeedPercent)
+            {
+                state.AddResearchSpeedPercentBonus(effect.intValue);
+            }
+            else if (effect.effectType == ResearchEffectType.AddDefensePercent)
+            {
+                state.AddDefensePowerBonus(effect.intValue);
+            }
+            else if (effect.effectType == ResearchEffectType.AddMaterialProductionPercent)
+            {
+                state.AddMaterialProductionPercentBonus(effect.intValue);
+            }
+        }
+    }
+}
