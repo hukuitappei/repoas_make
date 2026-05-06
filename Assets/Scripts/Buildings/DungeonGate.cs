@@ -36,7 +36,7 @@ public class DungeonGate : BuildingBase
             return false;
         }
 
-        MaterialRequirement[] requirements = GetBuildMaterialRequirements(nextLevel);
+        MaterialRequirement[] requirements = Data.GetBuildMaterialRequirements(nextLevel);
         return requirements == null || state.HasMaterials(requirements);
     }
 
@@ -45,20 +45,4 @@ public class DungeonGate : BuildingBase
         return Level <= 1 ? 0 : GetEffectValue();
     }
 
-    private MaterialRequirement[] GetBuildMaterialRequirements(int level)
-    {
-        if (Data.buildMaterialRequirements == null || Data.buildMaterialRequirements.Length == 0)
-        {
-            return null;
-        }
-
-        int index = level - 1;
-        if (index < 0 || index >= Data.buildMaterialRequirements.Length)
-        {
-            return null;
-        }
-
-        MaterialRequirement[] requirements = Data.buildMaterialRequirements[index];
-        return requirements != null && requirements.Length > 0 ? requirements : null;
-    }
 }

@@ -1,5 +1,6 @@
 public class CraftsmanGuild : GuildBase
 {
+    private static readonly System.Random Random = new System.Random();
     private const int SPECIALIZED_SUCCESS_EXPERIENCE = 30;
     private const int SPECIALIZED_FAILURE_EXPERIENCE = 15;
     private const int NON_SPECIALIZED_SUCCESS_EXPERIENCE = 15;
@@ -83,7 +84,7 @@ public class CraftsmanGuild : GuildBase
 
         if (action == GuildAction.Explore)
         {
-            bool isSuccess = state.CurrentTurn % 10 < GameConstants.EXPLORATION_SUCCESS_RATE * 10;
+            bool isSuccess = Random.NextDouble() < GameConstants.EXPLORATION_SUCCESS_RATE;
             state.AddInitialRaidOriginExplorationProgress(isSuccess ? GameConstants.EXPLORATION_SUCCESS_PROGRESS : GameConstants.EXPLORATION_FAILURE_PROGRESS);
             return isSuccess;
         }
