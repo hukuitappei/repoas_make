@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 253df55546195864889c7cc641ce9103, type: 3}
+  m_Name: agri_4
+  m_EditorClassIdentifier: Assembly-CSharp::ResearchNodeData
+  nodeId: agri_4
+  displayName: "\u5927\u898F\u6A21\u8FB2\u696D"
+  description: "\u8FB2\u5834\u3092\u3055\u3089\u306B\u62E1\u5F35\u53EF\u80FD\u306B\u3059\u308B\u5927\u898F\u6A21\u8FB2\u696D\u6280\u8853\u3092\u78BA\u7ACB\u3059\u308B\u3002"
+  prerequisiteNodeIds:
+  - agri_2
+  - agri_3
+  importantResearchGroupId: agri_upper
+  importantGroupTier: 3
+  researchCostFunds: 360
+  researchDurationTurns: 7
+  requiredWorkers: 2
+  requiredFood: 0
+  materialRequirements:
+  - Type: 1
+    MinimumGrade: 1
+    Amount: 30
+  - Type: 0
+    MinimumGrade: 1
+    Amount: 20
+  - Type: 3
+    MinimumGrade: 0
+    Amount: 50
+  effects:
+  - effectType: 5
+    targetId: Farm
+    intValue: 1
+    floatValue: 0

@@ -1,11 +1,12 @@
 using UnityEngine;
+using TMPro;
 using UnityEngine.UI;
 
 #pragma warning disable 0649
 public class MainGameScreen : MonoBehaviour
 {
-    [SerializeField] private Text turnText;
-    [SerializeField] private Text gameStateText;
+    [SerializeField] private TMP_Text turnText;
+    [SerializeField] private TMP_Text gameStateText;
     [SerializeField] private Button endTurnButton;
     [SerializeField] private ResourcePanel resourcePanel;
     [SerializeField] private ResearchPanel researchPanel;
@@ -44,13 +45,23 @@ public class MainGameScreen : MonoBehaviour
             researchPanel?.Bind(_gameManager);
             explorationPanel?.Bind(_gameManager);
             buildPanel?.Bind(_gameManager.State);
-            guildPanel?.Bind(_gameManager.State);
+            guildPanel?.Bind(_gameManager);
             happinessPanel?.Bind(_gameManager.State);
             raidPopup?.Bind(_gameManager);
-            metaScreen?.Bind(_gameManager);
+            metaScreen?.Bind(_gameManager, _gameManager.State.Lord);
         }
 
         Refresh();
+    }
+
+    public void SetAvailableBuildings(BuildingData[] buildings)
+    {
+        if (_gameManager == null || buildPanel == null)
+        {
+            return;
+        }
+
+        buildPanel.Bind(_gameManager.State, buildings);
     }
 
     public void Refresh()
@@ -63,7 +74,7 @@ public class MainGameScreen : MonoBehaviour
         researchPanel?.Refresh();
         explorationPanel?.Refresh();
         buildPanel?.Refresh(state);
-        guildPanel?.Refresh(state);
+        guildPanel?.Refresh();
         happinessPanel?.Refresh(state);
         raidPopup?.Refresh();
         metaScreen?.Refresh();
@@ -85,7 +96,7 @@ public class MainGameScreen : MonoBehaviour
         int zeroBasedTurn = turn - 1;
         int year = zeroBasedTurn / GameConstants.TURNS_PER_YEAR + 1;
         int month = zeroBasedTurn % GameConstants.TURNS_PER_YEAR + 1;
-        return $"ターン {turn} / {GameConstants.MAX_TURNS}  {year}年目 {month}月";
+        return $"ターン {turn} / {GameConstants.MAX_TURNS}  {year}年{month}月";
     }
 
     private static string FormatGameState(GameState state)
@@ -104,7 +115,7 @@ public class MainGameScreen : MonoBehaviour
         return $"状態: {result} / {state.GameEndReason}";
     }
 
-    private static void SetText(Text target, string value)
+    private static void SetText(TMP_Text target, string value)
     {
         if (target != null)
         {

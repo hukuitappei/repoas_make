@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e555da2dee2bc15428cdde932a77d961, type: 3}
+  m_Name: House
+  m_EditorClassIdentifier: Assembly-CSharp::BuildingData
+  buildingName: House
+  effectType: 6
+  maxLevel: 3
+  buildCostFunds: 4600000082000000dc000000
+  buildCostMaterials: 
+  level1MaterialRequirements:
+  - Type: 1
+    MinimumGrade: 0
+    Amount: 25
+  - Type: 0
+    MinimumGrade: 0
+    Amount: 5
+  level2MaterialRequirements:
+  - Type: 1
+    MinimumGrade: 0
+    Amount: 45
+  - Type: 0
+    MinimumGrade: 0
+    Amount: 15
+  level3MaterialRequirements:
+  - Type: 1
+    MinimumGrade: 0
+    Amount: 70
+  - Type: 0
+    MinimumGrade: 0
+    Amount: 30
+  maintenanceCostFunds: 030000000500000008000000
+  effectValues: 64000000dc0000007c010000

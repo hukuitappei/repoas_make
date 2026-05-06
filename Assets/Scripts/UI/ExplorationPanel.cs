@@ -1,12 +1,14 @@
 using UnityEngine;
+using TMPro;
 using UnityEngine.UI;
 
 #pragma warning disable 0649
 public class ExplorationPanel : MonoBehaviour
 {
-    [SerializeField] private Text statusText;
-    [SerializeField] private Text resultText;
+    [SerializeField] private TMP_Text statusText;
+    [SerializeField] private TMP_Text resultText;
     [SerializeField] private Button exploreButton;
+    [SerializeField] private Button startDungeonButton;
 
     private GameManager _gameManager;
     private string _lastResult;
@@ -17,6 +19,11 @@ public class ExplorationPanel : MonoBehaviour
         {
             exploreButton.onClick.AddListener(OnExploreButtonClicked);
         }
+
+        if (startDungeonButton != null)
+        {
+            startDungeonButton.onClick.AddListener(OnStartDungeonButtonClicked);
+        }
     }
 
     private void OnDestroy()
@@ -24,6 +31,11 @@ public class ExplorationPanel : MonoBehaviour
         if (exploreButton != null)
         {
             exploreButton.onClick.RemoveListener(OnExploreButtonClicked);
+        }
+
+        if (startDungeonButton != null)
+        {
+            startDungeonButton.onClick.RemoveListener(OnStartDungeonButtonClicked);
         }
     }
 
@@ -44,8 +56,12 @@ public class ExplorationPanel : MonoBehaviour
             return;
         }
 
-        string explored = state.IsInitialRaidOriginExplored ? "探索済み" : "未探索";
-        SetText(statusText, $"初期襲撃起点: {explored} / 進捗 {state.InitialRaidOriginExplorationProgress}%");
+        string explored = state.IsInitialRaidOriginExplored ? "踏破済" : "未踏破";
+        string dungeon = state.IsDungeonExplorationUnlocked ? "解放済" : "未解放";
+        int activeRuns = _gameManager != null && _gameManager.DungeonSystem != null
+            ? _gameManager.DungeonSystem.ActiveRuns.Count
+            : 0;
+        SetText(statusText, $"襲撃起点: {explored} / 進捗{state.InitialRaidOriginExplorationProgress}% / ダンジョン {dungeon} / 探索中 {activeRuns}件");
         SetText(resultText, _lastResult);
     }
 
@@ -57,16 +73,29 @@ public class ExplorationPanel : MonoBehaviour
         }
 
         bool success = _gameManager.RaidSystem.ExploreInitialRaidOrigin(_gameManager.State);
-        _lastResult = success ? "探索結果: 成功、進捗 +50%" : "探索結果: 失敗、進捗 +34%";
+        _lastResult = success ? "偵察成功。進捗 +50%。" : "偵察失敗。進捗 +34%。";
         if (_gameManager.State.IsInitialRaidOriginExplored)
         {
-            _lastResult += " / 起点を特定しました。";
+            _lastResult += " ダンジョン入口の踏破が完了しました。";
         }
 
         Refresh();
     }
 
-    private static void SetText(Text target, string value)
+    public void OnStartDungeonButtonClicked()
+    {
+        if (_gameManager == null)
+        {
+            return;
+        }
+
+        GuildMember member = _gameManager.FindFirstMemberByAction(GuildAction.Explore);
+        bool started = _gameManager.TryStartDungeonExploration(member, out string reason);
+        _lastResult = started ? reason : "ダンジョン探索を開始できません: " + reason;
+        Refresh();
+    }
+
+    private static void SetText(TMP_Text target, string value)
     {
         if (target != null)
         {

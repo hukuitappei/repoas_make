@@ -1,12 +1,12 @@
 using System.Text;
 using UnityEngine;
-using UnityEngine.UI;
+using TMPro;
 
 #pragma warning disable 0649
 public class MapPanel : MonoBehaviour
 {
-    [SerializeField] private Text mapText;
-    [SerializeField] private Text legendText;
+    [SerializeField] private TMP_Text mapText;
+    [SerializeField] private TMP_Text legendText;
 
     private MapData _mapData;
 
@@ -76,7 +76,7 @@ public class MapPanel : MonoBehaviour
         return '.';
     }
 
-    private static void SetText(Text target, string value)
+    private static void SetText(TMP_Text target, string value)
     {
         if (target != null)
         {

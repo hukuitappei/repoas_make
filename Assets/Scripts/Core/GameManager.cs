@@ -45,6 +45,82 @@ public class GameManager
         EvaluateGameEnd();
     }
 
+    public bool TryAssignGuildAction(GuildBase guild, GuildMember member, GuildAction action)
+    {
+        if (State == null || guild == null || member == null)
+        {
+            return false;
+        }
+
+        guild.AssignAction(member, action);
+        return member.CurrentAction == action;
+    }
+
+    public GuildMember FindFirstMemberByAction(GuildAction action)
+    {
+        if (State == null)
+        {
+            return null;
+        }
+
+        for (int i = 0; i < State.Guilds.Count; i++)
+        {
+            GuildBase guild = State.Guilds[i];
+            if (guild == null)
+            {
+                continue;
+            }
+
+            for (int j = 0; j < guild.Members.Count; j++)
+            {
+                GuildMember member = guild.Members[j];
+                if (member != null && member.CurrentAction == action)
+                {
+                    return member;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public bool TryStartDungeonExploration(GuildMember member, out string reason)
+    {
+        if (State == null || DungeonSystem == null)
+        {
+            reason = "Game state is not ready.";
+            return false;
+        }
+
+        if (!State.IsDungeonExplorationUnlocked)
+        {
+            reason = "Dungeon exploration is locked.";
+            return false;
+        }
+
+        if (member == null)
+        {
+            reason = "No explorer is selected.";
+            return false;
+        }
+
+        if (member.CurrentAction != GuildAction.Explore)
+        {
+            reason = member.Name + " is not assigned to Explore.";
+            return false;
+        }
+
+        if (DungeonSystem.HasActiveRun(member))
+        {
+            reason = member.Name + " is already in a dungeon run.";
+            return false;
+        }
+
+        bool started = DungeonSystem.StartExploration(member);
+        reason = started ? member.Name + " entered the dungeon." : "Failed to start the dungeon run.";
+        return started;
+    }
+
     public void EvaluateGameEnd()
     {
         if (State.IsGameOver)

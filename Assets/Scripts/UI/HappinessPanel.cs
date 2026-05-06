@@ -1,11 +1,11 @@
 using UnityEngine;
-using UnityEngine.UI;
+using TMPro;
 
 #pragma warning disable 0649
 public class HappinessPanel : MonoBehaviour
 {
-    [SerializeField] private Text happinessText;
-    [SerializeField] private Text detailText;
+    [SerializeField] private TMP_Text happinessText;
+    [SerializeField] private TMP_Text detailText;
 
     private GameState _state;
 
@@ -42,7 +42,7 @@ public class HappinessPanel : MonoBehaviour
         return $"状態: {crisis}\n食料備蓄: {foodMonths:0.0}か月分\n人口密度: {crowding * 100f:0}%\n危機継続: {state.HappinessCrisisTurnCount}ターン";
     }
 
-    private static void SetText(Text target, string value)
+    private static void SetText(TMP_Text target, string value)
     {
         if (target != null)
         {

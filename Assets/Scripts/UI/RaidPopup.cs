@@ -1,12 +1,13 @@
 using UnityEngine;
+using TMPro;
 using UnityEngine.UI;
 
 #pragma warning disable 0649
 public class RaidPopup : MonoBehaviour
 {
     [SerializeField] private GameObject root;
-    [SerializeField] private Text titleText;
-    [SerializeField] private Text detailText;
+    [SerializeField] private TMP_Text titleText;
+    [SerializeField] private TMP_Text detailText;
     [SerializeField] private Button closeButton;
 
     private GameManager _gameManager;
@@ -99,7 +100,7 @@ public class RaidPopup : MonoBehaviour
         return "なし";
     }
 
-    private static void SetText(Text target, string value)
+    private static void SetText(TMP_Text target, string value)
     {
         if (target != null)
         {

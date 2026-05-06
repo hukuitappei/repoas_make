@@ -1,12 +1,12 @@
 using UnityEngine;
-using UnityEngine.UI;
+using TMPro;
 
 #pragma warning disable 0649
 public class MetaScreen : MonoBehaviour
 {
-    [SerializeField] private Text scoreText;
-    [SerializeField] private Text metaPointText;
-    [SerializeField] private Text lordStatsText;
+    [SerializeField] private TMP_Text scoreText;
+    [SerializeField] private TMP_Text metaPointText;
+    [SerializeField] private TMP_Text lordStatsText;
 
     private GameManager _gameManager;
     private LordCharacter _lordCharacter;
@@ -117,7 +117,7 @@ public class MetaScreen : MonoBehaviour
             + $"思考力: {_lordCharacter.Thinking} / 次コスト{_lordCharacter.GetCostToIncrease(_lordCharacter.Thinking)}";
     }
 
-    private static void SetText(Text target, string value)
+    private static void SetText(TMP_Text target, string value)
     {
         if (target != null)
         {

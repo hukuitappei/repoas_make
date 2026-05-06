@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 253df55546195864889c7cc641ce9103, type: 3}
+  m_Name: mil_4
+  m_EditorClassIdentifier: Assembly-CSharp::ResearchNodeData
+  nodeId: mil_4
+  displayName: "\u7CBE\u92ED\u90E8\u968A"
+  description: "\u7CBE\u92ED\u8A13\u7DF4\u306B\u3088\u308A\u6226\u58EB\u30AE\u30EB\u30C9\u306E\u53D7\u3051\u5165\u308C\u4EBA\u6570\u3092\u5897\u3084\u3059\u3002"
+  prerequisiteNodeIds:
+  - mil_2
+  - mil_3
+  importantResearchGroupId: mil_upper
+  importantGroupTier: 3
+  researchCostFunds: 380
+  researchDurationTurns: 7
+  requiredWorkers: 2
+  requiredFood: 0
+  materialRequirements:
+  - Type: 2
+    MinimumGrade: 1
+    Amount: 35
+  - Type: 3
+    MinimumGrade: 1
+    Amount: 20
+  effects:
+  - effectType: 8
+    targetId: Warrior
+    intValue: 2
+    floatValue: 0

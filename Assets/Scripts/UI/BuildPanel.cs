@@ -1,12 +1,12 @@
 using System.Text;
 using UnityEngine;
-using UnityEngine.UI;
+using TMPro;
 
 #pragma warning disable 0649
 public class BuildPanel : MonoBehaviour
 {
-    [SerializeField] private Text ownedBuildingsText;
-    [SerializeField] private Text availableBuildingsText;
+    [SerializeField] private TMP_Text ownedBuildingsText;
+    [SerializeField] private TMP_Text availableBuildingsText;
     [SerializeField] private BuildingData[] availableBuildings;
 
     private GameState _state;
@@ -91,7 +91,7 @@ public class BuildPanel : MonoBehaviour
         return builder.ToString();
     }
 
-    private static void SetText(Text target, string value)
+    private static void SetText(TMP_Text target, string value)
     {
         if (target != null)
         {

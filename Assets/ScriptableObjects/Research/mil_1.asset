@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 253df55546195864889c7cc641ce9103, type: 3}
+  m_Name: mil_1
+  m_EditorClassIdentifier: Assembly-CSharp::ResearchNodeData
+  nodeId: mil_1
+  displayName: "\u30AE\u30EB\u30C9\u3068\u306E\u6226\u95D8\u5354\u529B"
+  description: "\u6226\u58EB\u30AE\u30EB\u30C9\u3068\u6B63\u5F0F\u306A\u5354\u529B\u4F53\u5236\u3092\u7BC9\u304D\u3001\u8FCE\u6483\u80FD\u529B\u3092\u78BA\u4FDD\u3059\u308B\u3002"
+  prerequisiteNodeIds: []
+  importantResearchGroupId: mil_0
+  importantGroupTier: 1
+  researchCostFunds: 50
+  researchDurationTurns: 2
+  requiredWorkers: 1
+  requiredFood: 50
+  materialRequirements:
+  - Type: 1
+    MinimumGrade: 0
+    Amount: 40
+  - Type: 0
+    MinimumGrade: 0
+    Amount: 25
+  effects:
+  - effectType: 3
+    targetId: 
+    intValue: 0
+    floatValue: 0

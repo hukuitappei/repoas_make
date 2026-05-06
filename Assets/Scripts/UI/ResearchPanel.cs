@@ -1,13 +1,13 @@
 using System.Text;
 using UnityEngine;
-using UnityEngine.UI;
+using TMPro;
 
 #pragma warning disable 0649
 public class ResearchPanel : MonoBehaviour
 {
-    [SerializeField] private Text activeResearchText;
-    [SerializeField] private Text completedResearchText;
-    [SerializeField] private Text availableResearchText;
+    [SerializeField] private TMP_Text activeResearchText;
+    [SerializeField] private TMP_Text completedResearchText;
+    [SerializeField] private TMP_Text availableResearchText;
     [SerializeField] private ResearchNodeData[] availableNodes;
 
     private GameManager _gameManager;
@@ -129,7 +129,7 @@ public class ResearchPanel : MonoBehaviour
         return builder.ToString();
     }
 
-    private static void SetText(Text target, string value)
+    private static void SetText(TMP_Text target, string value)
     {
         if (target != null)
         {

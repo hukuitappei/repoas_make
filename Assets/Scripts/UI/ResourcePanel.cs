@@ -1,13 +1,13 @@
 using System.Text;
 using UnityEngine;
-using UnityEngine.UI;
+using TMPro;
 
 #pragma warning disable 0649
 public class ResourcePanel : MonoBehaviour
 {
-    [SerializeField] private Text summaryText;
-    [SerializeField] private Text materialsText;
-    [SerializeField] private Text warningText;
+    [SerializeField] private TMP_Text summaryText;
+    [SerializeField] private TMP_Text materialsText;
+    [SerializeField] private TMP_Text warningText;
 
     private GameState _state;
 
@@ -86,7 +86,7 @@ public class ResourcePanel : MonoBehaviour
         return builder.ToString();
     }
 
-    private static void SetText(Text target, string value)
+    private static void SetText(TMP_Text target, string value)
     {
         if (target != null)
         {
