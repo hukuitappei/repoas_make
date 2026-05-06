@@ -192,6 +192,52 @@ public class ResearchTree
             {
                 state.AddMaterialProductionPercentBonus(effect.intValue);
             }
+            else if (effect.effectType == ResearchEffectType.UnlockExploration)
+            {
+                state.UnlockDungeonExploration();
+            }
+            else if (effect.effectType == ResearchEffectType.UnlockGuild)
+            {
+                for (int j = 0; j < state.Guilds.Count; j++)
+                {
+                    GuildBase guild = state.Guilds[j];
+                    if (guild != null && guild.Data != null && guild.Data.guildType.ToString() == effect.targetId)
+                    {
+                        guild.Unlock();
+                        break;
+                    }
+                }
+            }
+            else if (effect.effectType == ResearchEffectType.AddBuildingMaxLevel)
+            {
+                for (int j = 0; j < state.Buildings.Count; j++)
+                {
+                    BuildingBase building = state.Buildings[j];
+                    if (building != null && (string.IsNullOrEmpty(effect.targetId) || building.Name == effect.targetId))
+                    {
+                        building.IncreaseMaxLevel(effect.intValue);
+                    }
+                }
+            }
+            else if (effect.effectType == ResearchEffectType.AddLordStat)
+            {
+                if (state.Lord != null)
+                {
+                    state.Lord.AddStat(effect.targetId, effect.intValue);
+                }
+            }
+            else if (effect.effectType == ResearchEffectType.AddGuildMaxMembers)
+            {
+                for (int j = 0; j < state.Guilds.Count; j++)
+                {
+                    GuildBase guild = state.Guilds[j];
+                    if (guild != null && guild.Data != null && guild.Data.guildType.ToString() == effect.targetId)
+                    {
+                        guild.AddMaxMembers(effect.intValue);
+                        break;
+                    }
+                }
+            }
         }
     }
 }

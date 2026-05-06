@@ -27,6 +27,14 @@ public abstract class BuildingBase
         }
     }
 
+    public void IncreaseMaxLevel(int amount)
+    {
+        if (amount > 0)
+        {
+            MaxLevel += amount;
+        }
+    }
+
     public void SetActive(bool isActive)
     {
         IsActive = isActive;

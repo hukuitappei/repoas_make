@@ -28,6 +28,14 @@ public abstract class GuildBase
         IsUnlocked = true;
     }
 
+    public void AddMaxMembers(int amount)
+    {
+        if (amount > 0)
+        {
+            MaxMembers += amount;
+        }
+    }
+
     public bool CanAddMember()
     {
         return IsUnlocked && _members.Count < MaxMembers;

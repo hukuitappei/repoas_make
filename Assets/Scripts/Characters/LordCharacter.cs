@@ -20,6 +20,18 @@ public class LordCharacter
         return Clamp(currentStat, 0, 100) / 5 + 1;
     }
 
+    public void AddStat(string statName, int amount)
+    {
+        switch (statName)
+        {
+            case "Popularity":   Popularity   = Clamp(Popularity   + amount, 0, 100); break;
+            case "Negotiation":  Negotiation  = Clamp(Negotiation  + amount, 0, 100); break;
+            case "Luck":         Luck         = Clamp(Luck         + amount, 0, 100); break;
+            case "Support":      Support      = Clamp(Support      + amount, 0, 100); break;
+            case "Thinking":     Thinking     = Clamp(Thinking     + amount, 0, 100); break;
+        }
+    }
+
     public bool TryIncreasePopularity(int availableMetaPoints, out int spentMetaPoints)
     {
         int newValue;
