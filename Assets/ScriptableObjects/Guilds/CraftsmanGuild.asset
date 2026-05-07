@@ -21,4 +21,4 @@ MonoBehaviour:
   baseSkillPower: 10
   combatPowerGrowth: 2
   skillPowerGrowth: 3
-  specializedActions: 04000000
+  specializedActions: 0400000005000000

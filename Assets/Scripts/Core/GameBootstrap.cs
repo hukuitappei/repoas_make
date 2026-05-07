@@ -6,6 +6,7 @@ public class GameBootstrap : MonoBehaviour
     [SerializeField] private MainGameScreen mainGameScreen;
     [SerializeField] private MapPanel mapPanel;
     [SerializeField] private GuildData[] guildCatalog;
+    [SerializeField] private ResearchNodeData[] researchCatalog;
     [SerializeField] private BuildingData[] availableBuildings;
     [SerializeField] private BuildingData[] startingBuildings;
     [SerializeField] private EventData[] eventCatalog;
@@ -20,9 +21,11 @@ public class GameBootstrap : MonoBehaviour
     {
         _gameManager = new GameManager();
         _mapData = _gameManager.MapGenerator != null ? _gameManager.MapGenerator.Generate() : null;
+        _gameManager.SetMapData(_mapData);
 
         InitializeGuilds();
         InitializeStartingBuildings();
+        InitializeResearchNodes();
         InitializeEvents();
 
         if (mainGameScreen != null)
@@ -126,6 +129,19 @@ public class GameBootstrap : MonoBehaviour
         for (int i = 0; i < eventCatalog.Length; i++)
         {
             _gameManager.EventSystem.RegisterEvent(eventCatalog[i]);
+        }
+    }
+
+    private void InitializeResearchNodes()
+    {
+        if (_gameManager == null || _gameManager.ResearchTree == null || researchCatalog == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < researchCatalog.Length; i++)
+        {
+            _gameManager.ResearchTree.RegisterNode(researchCatalog[i]);
         }
     }
 

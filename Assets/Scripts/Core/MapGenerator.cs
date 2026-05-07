@@ -32,22 +32,33 @@ public class MapGenerator
             }
         }
 
-        PlaceSpecialTile(mapData, MapTileType.DungeonEntrance);
-        PlaceInitialRaidOrigin(mapData);
+        int homeX = mapData.Width / 2;
+        int homeY = mapData.Height / 2;
+        mapData.SetTile(homeX, homeY, MapTileType.Grass);
+        mapData.SetHome(homeX, homeY);
+
+        PlaceSpecialTile(mapData, MapTileType.DungeonEntrance, homeX, homeY);
+        PlaceInitialRaidOrigin(mapData, homeX, homeY);
         return mapData;
     }
 
-    private void PlaceSpecialTile(MapData mapData, MapTileType tileType)
+    private void PlaceSpecialTile(MapData mapData, MapTileType tileType, int forbiddenX, int forbiddenY)
     {
-        int x = _random.Next(0, mapData.Width);
-        int y = _random.Next(0, mapData.Height);
+        int x;
+        int y;
+
+        do
+        {
+            x = _random.Next(0, mapData.Width);
+            y = _random.Next(0, mapData.Height);
+        }
+        while (x == forbiddenX && y == forbiddenY);
+
         mapData.SetTile(x, y, tileType);
     }
 
-    private void PlaceInitialRaidOrigin(MapData mapData)
+    private void PlaceInitialRaidOrigin(MapData mapData, int centerX, int centerY)
     {
-        int centerX = mapData.Width / 2;
-        int centerY = mapData.Height / 2;
         int x;
         int y;
 
@@ -58,7 +69,8 @@ public class MapGenerator
             x = Clamp(x, 0, mapData.Width - 1);
             y = Clamp(y, 0, mapData.Height - 1);
         }
-        while (Math.Abs(x - centerX) + Math.Abs(y - centerY) > GameConstants.RAID_ORIGIN_MAX_DISTANCE);
+        while ((x == centerX && y == centerY)
+            || Math.Abs(x - centerX) + Math.Abs(y - centerY) > GameConstants.RAID_ORIGIN_MAX_DISTANCE);
 
         mapData.SetTile(x, y, MapTileType.InitialRaidOrigin);
     }

@@ -352,6 +352,8 @@ public static class InitialDataAssetGenerator
         LayoutExplorationPanel(explorationPanel);
         LayoutBuildPanel(buildPanel);
         LayoutGuildPanel(guildPanel);
+        EnsureExtendedBuildPanelControls(buildPanel);
+        EnsureExtendedGuildPanelControls(guildPanel);
         EnsureGuildDevelopButton(guildPanel);
         LayoutHappinessPanel(happinessPanel);
         LayoutMapPanel(mapPanel);
@@ -748,6 +750,39 @@ public static class InitialDataAssetGenerator
         EnsureAndAssignButton(so, "developButton", guildPanel.gameObject, "DevelopButton", "開拓", new Vector2(400f, -472f), new Vector2(72f, 36f));
         so.ApplyModifiedPropertiesWithoutUndo();
         EditorUtility.SetDirty(guildPanel);
+    }
+
+    private static void EnsureExtendedGuildPanelControls(GuildPanel guildPanel)
+    {
+        if (guildPanel == null)
+        {
+            return;
+        }
+
+        SerializedObject so = new SerializedObject(guildPanel);
+        EnsureAndAssignTmpText(so, "selectedGuildText", guildPanel.gameObject, "SelectedGuildText", new Vector2(0f, -125f), new Vector2(520f, 32f), 15);
+        EnsureAndAssignButton(so, "previousGuildButton", guildPanel.gameObject, "PreviousGuildButton", "前ギルド", new Vector2(0f, -424f), new Vector2(90f, 36f));
+        EnsureAndAssignButton(so, "nextGuildButton", guildPanel.gameObject, "NextGuildButton", "次ギルド", new Vector2(98f, -424f), new Vector2(90f, 36f));
+        EnsureAndAssignButton(so, "hireButton", guildPanel.gameObject, "HireButton", "加入", new Vector2(196f, -424f), new Vector2(72f, 36f));
+        so.ApplyModifiedPropertiesWithoutUndo();
+        EditorUtility.SetDirty(guildPanel);
+    }
+
+    private static void EnsureExtendedBuildPanelControls(BuildPanel buildPanel)
+    {
+        if (buildPanel == null)
+        {
+            return;
+        }
+
+        SerializedObject so = new SerializedObject(buildPanel);
+        EnsureAndAssignTmpText(so, "selectedBuildingText", buildPanel.gameObject, "SelectedBuildingText", new Vector2(230f, -68f), new Vector2(250f, 106f), 14);
+        EnsureAndAssignTmpText(so, "actionResultText", buildPanel.gameObject, "BuildActionResultText", new Vector2(0f, -222f), new Vector2(480f, 32f), 14);
+        EnsureAndAssignButton(so, "previousBuildingButton", buildPanel.gameObject, "PreviousBuildingButton", "前", new Vector2(0f, -260f), new Vector2(60f, 36f));
+        EnsureAndAssignButton(so, "nextBuildingButton", buildPanel.gameObject, "NextBuildingButton", "次", new Vector2(68f, -260f), new Vector2(60f, 36f));
+        EnsureAndAssignButton(so, "buildOrUpgradeButton", buildPanel.gameObject, "BuildOrUpgradeButton", "建設/強化", new Vector2(136f, -260f), new Vector2(120f, 36f));
+        so.ApplyModifiedPropertiesWithoutUndo();
+        EditorUtility.SetDirty(buildPanel);
     }
 
     private static void LayoutResearchPanel(ResearchPanel researchPanel)

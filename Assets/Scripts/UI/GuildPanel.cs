@@ -1,16 +1,20 @@
 using System.Text;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
-using TMPro;
 using UnityEngine.UI;
 
 #pragma warning disable 0649
 public class GuildPanel : MonoBehaviour
 {
     [SerializeField] private TMP_Text guildSummaryText;
+    [SerializeField] private TMP_Text selectedGuildText;
     [SerializeField] private TMP_Text memberListText;
     [SerializeField] private TMP_Text selectedMemberText;
     [SerializeField] private TMP_Text actionResultText;
+    [SerializeField] private Button previousGuildButton;
+    [SerializeField] private Button nextGuildButton;
+    [SerializeField] private Button hireButton;
     [SerializeField] private Button previousMemberButton;
     [SerializeField] private Button nextMemberButton;
     [SerializeField] private Button idleButton;
@@ -18,13 +22,18 @@ public class GuildPanel : MonoBehaviour
     [SerializeField] private Button exploreButton;
     [SerializeField] private Button researchButton;
     [SerializeField] private Button constructButton;
+    [SerializeField] private Button developButton;
 
     private GameManager _gameManager;
     private GameState _state;
+    private int _selectedGuildIndex;
     private int _selectedMemberIndex;
 
     private void Awake()
     {
+        AddListener(previousGuildButton, OnPreviousGuildClicked);
+        AddListener(nextGuildButton, OnNextGuildClicked);
+        AddListener(hireButton, OnHireClicked);
         AddListener(previousMemberButton, OnPreviousMemberClicked);
         AddListener(nextMemberButton, OnNextMemberClicked);
         AddListener(idleButton, OnIdleClicked);
@@ -32,10 +41,14 @@ public class GuildPanel : MonoBehaviour
         AddListener(exploreButton, OnExploreClicked);
         AddListener(researchButton, OnResearchClicked);
         AddListener(constructButton, OnConstructClicked);
+        AddListener(developButton, OnDevelopClicked);
     }
 
     private void OnDestroy()
     {
+        RemoveListener(previousGuildButton, OnPreviousGuildClicked);
+        RemoveListener(nextGuildButton, OnNextGuildClicked);
+        RemoveListener(hireButton, OnHireClicked);
         RemoveListener(previousMemberButton, OnPreviousMemberClicked);
         RemoveListener(nextMemberButton, OnNextMemberClicked);
         RemoveListener(idleButton, OnIdleClicked);
@@ -43,12 +56,14 @@ public class GuildPanel : MonoBehaviour
         RemoveListener(exploreButton, OnExploreClicked);
         RemoveListener(researchButton, OnResearchClicked);
         RemoveListener(constructButton, OnConstructClicked);
+        RemoveListener(developButton, OnDevelopClicked);
     }
 
     public void Bind(GameManager gameManager)
     {
         _gameManager = gameManager;
         _state = _gameManager != null ? _gameManager.State : null;
+        _selectedGuildIndex = 0;
         _selectedMemberIndex = 0;
         SetText(actionResultText, string.Empty);
         Refresh();
@@ -77,14 +92,17 @@ public class GuildPanel : MonoBehaviour
         if (_state == null)
         {
             SetText(guildSummaryText, "ギルド: 未接続");
+            SetText(selectedGuildText, "選択中ギルド: なし");
             SetText(memberListText, string.Empty);
-            SetText(selectedMemberText, "選択中: なし");
+            SetText(selectedMemberText, "選択中メンバー: なし");
             return;
         }
 
-        ClampSelection();
-        SetText(guildSummaryText, BuildGuildSummaryText(_state));
-        SetText(memberListText, BuildMemberListText(_state, _selectedMemberIndex));
+        ClampGuildSelection();
+        ClampMemberSelection();
+        SetText(guildSummaryText, BuildGuildSummaryText(_state, _selectedGuildIndex));
+        SetText(selectedGuildText, BuildSelectedGuildText());
+        SetText(memberListText, BuildMemberListText());
         SetText(selectedMemberText, BuildSelectedMemberText());
     }
 
@@ -99,9 +117,58 @@ public class GuildPanel : MonoBehaviour
         Refresh();
     }
 
+    public void OnPreviousGuildClicked()
+    {
+        int count = CountGuilds(_state);
+        if (count <= 0)
+        {
+            return;
+        }
+
+        _selectedGuildIndex = (_selectedGuildIndex - 1 + count) % count;
+        _selectedMemberIndex = 0;
+        SetText(actionResultText, string.Empty);
+        Refresh();
+    }
+
+    public void OnNextGuildClicked()
+    {
+        int count = CountGuilds(_state);
+        if (count <= 0)
+        {
+            return;
+        }
+
+        _selectedGuildIndex = (_selectedGuildIndex + 1) % count;
+        _selectedMemberIndex = 0;
+        SetText(actionResultText, string.Empty);
+        Refresh();
+    }
+
+    public void OnHireClicked()
+    {
+        if (_gameManager == null)
+        {
+            SetText(actionResultText, "加入処理を開始できません。");
+            return;
+        }
+
+        GuildBase guild = GetSelectedGuild();
+        if (guild == null)
+        {
+            SetText(actionResultText, "選択中のギルドがありません。");
+            return;
+        }
+
+        _gameManager.TryHireGuildMember(guild, out string message);
+        SetText(actionResultText, message);
+        Refresh();
+    }
+
     public void OnPreviousMemberClicked()
     {
-        int count = CountMembers(_state);
+        GuildBase guild = GetSelectedGuild();
+        int count = guild != null ? CountMembers(guild) : 0;
         if (count <= 0)
         {
             return;
@@ -114,7 +181,8 @@ public class GuildPanel : MonoBehaviour
 
     public void OnNextMemberClicked()
     {
-        int count = CountMembers(_state);
+        GuildBase guild = GetSelectedGuild();
+        int count = guild != null ? CountMembers(guild) : 0;
         if (count <= 0)
         {
             return;
@@ -150,11 +218,18 @@ public class GuildPanel : MonoBehaviour
         AssignSelectedAction(GuildAction.Construct);
     }
 
+    public void OnDevelopClicked()
+    {
+        AssignSelectedAction(GuildAction.Develop);
+    }
+
     private void AssignSelectedAction(GuildAction action)
     {
-        if (!TryGetSelectedMember(out GuildBase guild, out GuildMember member))
+        GuildBase guild = GetSelectedGuild();
+        GuildMember member = GetSelectedMember(guild);
+        if (guild == null || member == null)
         {
-            SetText(actionResultText, "メンバーがいません。");
+            SetText(actionResultText, "操作対象のメンバーがいません。");
             Refresh();
             return;
         }
@@ -164,8 +239,8 @@ public class GuildPanel : MonoBehaviour
             : TryAssignWithoutGameManager(guild, member, action);
 
         SetText(actionResultText, assigned
-            ? member.Name + " → " + action
-            : member.Name + " に " + action + " を割り当てられません。");
+            ? $"{member.Name} を {action} に設定しました。"
+            : $"{member.Name} を {action} に設定できませんでした。");
         Refresh();
     }
 
@@ -180,60 +255,107 @@ public class GuildPanel : MonoBehaviour
         return member.CurrentAction == action;
     }
 
-    private string BuildSelectedMemberText()
+    private string BuildSelectedGuildText()
     {
-        if (!TryGetSelectedMember(out GuildBase guild, out GuildMember member))
+        GuildBase guild = GetSelectedGuild();
+        if (guild == null)
         {
-            return "選択中: なし";
+            return "選択中ギルド: なし";
         }
 
-        return "選択中: " + guild.GuildName + " / " + member.Name + " (" + member.CurrentAction + ")";
+        int hireCost = _gameManager != null ? _gameManager.GetGuildHireCost(guild) : (guild.Data != null ? guild.Data.hireCostFunds : 0);
+        return $"選択中ギルド: {guild.GuildName} / {guild.Members.Count}/{guild.MaxMembers} / 加入費 {hireCost} / {(guild.IsUnlocked ? "解放済み" : "未解放")}";
     }
 
-    private bool TryGetSelectedMember(out GuildBase guild, out GuildMember member)
+    private string BuildSelectedMemberText()
     {
-        guild = null;
-        member = null;
+        GuildBase guild = GetSelectedGuild();
+        GuildMember member = GetSelectedMember(guild);
+        if (guild == null || member == null)
+        {
+            return "選択中メンバー: なし";
+        }
 
+        return $"選択中メンバー: {guild.GuildName} / {member.Name} / Lv.{member.Level} / 行動 {member.CurrentAction}";
+    }
+
+    private GuildBase GetSelectedGuild()
+    {
         if (_state == null)
         {
-            return false;
+            return null;
         }
 
         int currentIndex = 0;
         for (int i = 0; i < _state.Guilds.Count; i++)
         {
-            GuildBase currentGuild = _state.Guilds[i];
-            if (currentGuild == null)
+            GuildBase guild = _state.Guilds[i];
+            if (guild == null)
             {
                 continue;
             }
 
-            for (int j = 0; j < currentGuild.Members.Count; j++)
+            if (currentIndex == _selectedGuildIndex)
             {
-                GuildMember currentMember = currentGuild.Members[j];
-                if (currentMember == null)
-                {
-                    continue;
-                }
-
-                if (currentIndex == _selectedMemberIndex)
-                {
-                    guild = currentGuild;
-                    member = currentMember;
-                    return true;
-                }
-
-                currentIndex++;
+                return guild;
             }
+
+            currentIndex++;
         }
 
-        return false;
+        return null;
     }
 
-    private void ClampSelection()
+    private GuildMember GetSelectedMember(GuildBase guild)
     {
-        int count = CountMembers(_state);
+        if (guild == null)
+        {
+            return null;
+        }
+
+        int currentIndex = 0;
+        for (int i = 0; i < guild.Members.Count; i++)
+        {
+            GuildMember member = guild.Members[i];
+            if (member == null)
+            {
+                continue;
+            }
+
+            if (currentIndex == _selectedMemberIndex)
+            {
+                return member;
+            }
+
+            currentIndex++;
+        }
+
+        return null;
+    }
+
+    private void ClampGuildSelection()
+    {
+        int count = CountGuilds(_state);
+        if (count <= 0)
+        {
+            _selectedGuildIndex = 0;
+            return;
+        }
+
+        if (_selectedGuildIndex < 0)
+        {
+            _selectedGuildIndex = 0;
+        }
+        else if (_selectedGuildIndex >= count)
+        {
+            _selectedGuildIndex = count - 1;
+        }
+    }
+
+    private void ClampMemberSelection()
+    {
+        GuildBase guild = GetSelectedGuild();
+        int count = guild != null ? CountMembers(guild) : 0;
         if (count <= 0)
         {
             _selectedMemberIndex = 0;
@@ -250,7 +372,7 @@ public class GuildPanel : MonoBehaviour
         }
     }
 
-    private static string BuildGuildSummaryText(GameState state)
+    private static string BuildGuildSummaryText(GameState state, int selectedGuildIndex)
     {
         if (state.Guilds.Count == 0)
         {
@@ -258,6 +380,7 @@ public class GuildPanel : MonoBehaviour
         }
 
         StringBuilder builder = new StringBuilder("ギルド一覧\n");
+        int visibleIndex = 0;
         for (int i = 0; i < state.Guilds.Count; i++)
         {
             GuildBase guild = state.Guilds[i];
@@ -266,44 +389,71 @@ public class GuildPanel : MonoBehaviour
                 continue;
             }
 
-            string unlocked = guild.IsUnlocked ? "開放済" : "未開放";
-            builder.AppendLine($"{guild.GuildName} {guild.Members.Count}/{guild.MaxMembers} [{unlocked}] 戦力 {guild.CalculateCombatPower()}");
+            string prefix = visibleIndex == selectedGuildIndex ? "> " : "  ";
+            string unlocked = guild.IsUnlocked ? "解放済み" : "未解放";
+            builder.Append(prefix)
+                .Append(guild.GuildName)
+                .Append(" ")
+                .Append(guild.Members.Count)
+                .Append("/")
+                .Append(guild.MaxMembers)
+                .Append(" [")
+                .Append(unlocked)
+                .Append("] 戦力 ")
+                .Append(guild.CalculateCombatPower())
+                .AppendLine();
+            visibleIndex++;
         }
 
         return builder.ToString();
     }
 
-    private static string BuildMemberListText(GameState state, int selectedMemberIndex)
+    private string BuildMemberListText()
     {
-        StringBuilder builder = new StringBuilder("メンバー一覧\n");
-        int currentIndex = 0;
-
-        for (int i = 0; i < state.Guilds.Count; i++)
+        GuildBase guild = GetSelectedGuild();
+        if (guild == null)
         {
-            GuildBase guild = state.Guilds[i];
-            if (guild == null)
+            return "メンバー一覧\nなし";
+        }
+
+        if (CountMembers(guild) == 0)
+        {
+            return "メンバー一覧\n加入済みメンバーなし";
+        }
+
+        StringBuilder builder = new StringBuilder("メンバー一覧\n");
+        int visibleIndex = 0;
+        for (int i = 0; i < guild.Members.Count; i++)
+        {
+            GuildMember member = guild.Members[i];
+            if (member == null)
             {
                 continue;
             }
 
-            for (int memberIndex = 0; memberIndex < guild.Members.Count; memberIndex++)
-            {
-                GuildMember member = guild.Members[memberIndex];
-                if (member == null)
-                {
-                    continue;
-                }
-
-                string prefix = currentIndex == selectedMemberIndex ? "> " : "  ";
-                builder.AppendLine($"{prefix}{guild.GuildName} / {member.Name} Lv.{member.Level} 経験値{member.Experience}/{member.RequiredExperience} 戦闘力{member.CurrentCombatPower} 技術力{member.CurrentSkillPower} 行動{member.CurrentAction}");
-                currentIndex++;
-            }
+            string prefix = visibleIndex == _selectedMemberIndex ? "> " : "  ";
+            builder.Append(prefix)
+                .Append(member.Name)
+                .Append(" Lv.")
+                .Append(member.Level)
+                .Append(" 経験値 ")
+                .Append(member.Experience)
+                .Append("/")
+                .Append(member.RequiredExperience)
+                .Append(" 戦闘 ")
+                .Append(member.CurrentCombatPower)
+                .Append(" 技能 ")
+                .Append(member.CurrentSkillPower)
+                .Append(" 行動 ")
+                .Append(member.CurrentAction)
+                .AppendLine();
+            visibleIndex++;
         }
 
         return builder.ToString();
     }
 
-    private static int CountMembers(GameState state)
+    private static int CountGuilds(GameState state)
     {
         if (state == null)
         {
@@ -313,18 +463,28 @@ public class GuildPanel : MonoBehaviour
         int count = 0;
         for (int i = 0; i < state.Guilds.Count; i++)
         {
-            GuildBase guild = state.Guilds[i];
-            if (guild == null)
+            if (state.Guilds[i] != null)
             {
-                continue;
+                count++;
             }
+        }
 
-            for (int j = 0; j < guild.Members.Count; j++)
+        return count;
+    }
+
+    private static int CountMembers(GuildBase guild)
+    {
+        if (guild == null)
+        {
+            return 0;
+        }
+
+        int count = 0;
+        for (int i = 0; i < guild.Members.Count; i++)
+        {
+            if (guild.Members[i] != null)
             {
-                if (guild.Members[j] != null)
-                {
-                    count++;
-                }
+                count++;
             }
         }
 

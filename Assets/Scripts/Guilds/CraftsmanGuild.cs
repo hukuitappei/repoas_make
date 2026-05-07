@@ -65,7 +65,7 @@ public class CraftsmanGuild : GuildBase
             return false;
         }
 
-        return action == GuildAction.Idle || member.IsAvailable;
+        return member != null && !member.IsInDungeonRun;
     }
 
     private bool ApplyActionResult(GameState state, GuildMember member, GuildAction action)
@@ -108,7 +108,7 @@ public class CraftsmanGuild : GuildBase
             return Data.IsSpecializedAction(action);
         }
 
-        return action == GuildAction.Construct;
+        return action == GuildAction.Construct || action == GuildAction.Develop;
     }
 
     private static bool CanContributeCombatPower(GuildMember member)

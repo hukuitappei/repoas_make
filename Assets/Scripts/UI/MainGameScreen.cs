@@ -1,5 +1,5 @@
-using UnityEngine;
 using TMPro;
+using UnityEngine;
 using UnityEngine.UI;
 
 #pragma warning disable 0649
@@ -9,6 +9,7 @@ public class MainGameScreen : MonoBehaviour
     [SerializeField] private TMP_Text gameStateText;
     [SerializeField] private Button endTurnButton;
     [SerializeField] private ResourcePanel resourcePanel;
+    [SerializeField] private PopulationAssignmentPanel populationAssignmentPanel;
     [SerializeField] private ResearchPanel researchPanel;
     [SerializeField] private ExplorationPanel explorationPanel;
     [SerializeField] private BuildPanel buildPanel;
@@ -42,6 +43,7 @@ public class MainGameScreen : MonoBehaviour
         if (_gameManager != null)
         {
             resourcePanel?.Bind(_gameManager.State);
+            populationAssignmentPanel?.Bind(_gameManager);
             researchPanel?.Bind(_gameManager);
             explorationPanel?.Bind(_gameManager);
             buildPanel?.Bind(_gameManager.State);
@@ -61,7 +63,7 @@ public class MainGameScreen : MonoBehaviour
             return;
         }
 
-        buildPanel.Bind(_gameManager.State, buildings);
+        buildPanel.Bind(_gameManager, buildings);
     }
 
     public void Refresh()
@@ -71,6 +73,7 @@ public class MainGameScreen : MonoBehaviour
         SetText(gameStateText, FormatGameState(state));
 
         resourcePanel?.Refresh(state);
+        populationAssignmentPanel?.Refresh();
         researchPanel?.Refresh();
         explorationPanel?.Refresh();
         buildPanel?.Refresh(state);

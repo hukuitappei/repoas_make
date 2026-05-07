@@ -1,6 +1,6 @@
 using System.Text;
-using UnityEngine;
 using TMPro;
+using UnityEngine;
 
 #pragma warning disable 0649
 public class ResourcePanel : MonoBehaviour
@@ -43,9 +43,9 @@ public class ResourcePanel : MonoBehaviour
         StringBuilder builder = new StringBuilder();
         AppendMaterialLine(builder, state, MaterialType.Stone, "石材");
         AppendMaterialLine(builder, state, MaterialType.Wood, "木材");
-        AppendMaterialLine(builder, state, MaterialType.Metal, "金属材");
+        AppendMaterialLine(builder, state, MaterialType.Metal, "金属");
         AppendMaterialLine(builder, state, MaterialType.Foodstuff, "食材");
-        AppendMaterialLine(builder, state, MaterialType.Magic, "魔法素材");
+        AppendMaterialLine(builder, state, MaterialType.Magic, "魔力素材");
         return builder.ToString();
     }
 
@@ -70,7 +70,7 @@ public class ResourcePanel : MonoBehaviour
         StringBuilder builder = new StringBuilder();
         if (state.Food < state.Population)
         {
-            builder.AppendLine("警告: 次ターンの食料が不足する可能性があります。");
+            builder.AppendLine("警告: 次ターンの食料不足の可能性があります。");
         }
 
         if (state.Funds < 0)
@@ -80,7 +80,7 @@ public class ResourcePanel : MonoBehaviour
 
         if (state.Happiness < 20)
         {
-            builder.AppendLine("警告: 幸福度危機です。");
+            builder.AppendLine("警告: 幸福度が危険水準です。");
         }
 
         return builder.ToString();

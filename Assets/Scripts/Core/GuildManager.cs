@@ -5,6 +5,11 @@ public class GuildManager
         return CountAssignedWorkers(state, GuildAction.Research);
     }
 
+    public int CountAssignedDevelopmentWorkers(GameState state)
+    {
+        return CountAssignedWorkers(state, GuildAction.Develop);
+    }
+
     public int CountAssignedWorkers(GameState state, GuildAction action)
     {
         if (state == null)

@@ -69,7 +69,7 @@ public class WarriorGuild : GuildBase
             return false;
         }
 
-        return action == GuildAction.Idle || member.IsAvailable;
+        return member != null && !member.IsInDungeonRun;
     }
 
     private bool ApplyActionResult(GameState state, GuildMember member, GuildAction action)
@@ -106,7 +106,7 @@ public class WarriorGuild : GuildBase
             return Data.IsSpecializedAction(action);
         }
 
-        return action == GuildAction.Defend || action == GuildAction.Explore;
+        return action == GuildAction.Defend || action == GuildAction.Explore || action == GuildAction.Develop;
     }
 
     private static bool CanContributeCombatPower(GuildMember member)

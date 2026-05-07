@@ -64,7 +64,7 @@ public class MageGuild : GuildBase
             return false;
         }
 
-        return action == GuildAction.Idle || member.IsAvailable;
+        return member != null && !member.IsInDungeonRun;
     }
 
     private bool ApplyActionResult(GameState state, GuildMember member, GuildAction action)
@@ -107,7 +107,7 @@ public class MageGuild : GuildBase
             return Data.IsSpecializedAction(action);
         }
 
-        return action == GuildAction.Research || action == GuildAction.Explore;
+        return action == GuildAction.Research || action == GuildAction.Explore || action == GuildAction.Develop;
     }
 
     private static bool CanContributeCombatPower(GuildMember member)

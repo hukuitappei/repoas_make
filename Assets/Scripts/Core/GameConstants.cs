@@ -9,6 +9,20 @@ public static class GameConstants
     public const int STARTING_FUNDS = 500;
     public const int STARTING_POPULATION = 300;
     public const int FOOD_CONSUMPTION_PER_POP = 1;
+    public const int STARTING_ASSIGNED_FOOD_WORKERS = 80;
+    public const int STARTING_ASSIGNED_FUNDS_WORKERS = 50;
+    public const int STARTING_ASSIGNED_DEVELOPMENT_WORKERS = 100;
+    public const int MAX_ASSIGNED_FOOD_WORKERS = 100;
+    public const int MAX_ASSIGNED_FUNDS_WORKERS = 100;
+    public const int FOOD_PRODUCTION_PER_ASSIGNED_WORKER = 3;
+    public const int FUNDS_PRODUCTION_PER_ASSIGNED_WORKER = 2;
+    public const int FOOD_EXCHANGE_FUNDS_COST = 100;
+    public const int FOOD_EXCHANGE_BASE_FOOD_GAIN = 50;
+    public const int FOOD_EXCHANGE_BONUS_PER_10_NEGOTIATION = 5;
+    public const float DEVELOPMENT_SUCCESS_RATE_PER_WORKER = 0.001f;
+    public const float DEVELOPMENT_DISTANCE_PENALTY_PER_TILE = 0.01f;
+    public const float DEVELOPMENT_MAX_SUCCESS_RATE = 0.95f;
+    public const float DEVELOPMENT_INACTIVITY_DECAY_BASE = 0.01f;
 
     public const int STARTING_F_STONE = 80;
     public const int STARTING_F_WOOD = 100;

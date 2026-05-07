@@ -30,9 +30,7 @@ public class MetaScreen : MonoBehaviour
         int score = _gameManager != null && _gameManager.ScoreCalculator != null
             ? _gameManager.ScoreCalculator.Calculate(state)
             : 0;
-        _availableMetaPoints = _gameManager != null && _gameManager.MetaProgressionSystem != null
-            ? _gameManager.MetaProgressionSystem.CalculateEarnedMetaPoints(state)
-            : 0;
+        _availableMetaPoints = GetAvailableMetaPoints(state);
 
         SetText(scoreText, $"スコア: {score}");
         SetText(metaPointText, $"獲得予定メタポイント: {_availableMetaPoints}");
@@ -96,6 +94,12 @@ public class MetaScreen : MonoBehaviour
 
         if (increased)
         {
+            GameState state = _gameManager != null ? _gameManager.State : null;
+            if (state != null)
+            {
+                state.TrySpendMetaPoints(spentPoints);
+            }
+
             _availableMetaPoints -= spentPoints;
         }
 
@@ -115,6 +119,16 @@ public class MetaScreen : MonoBehaviour
             + $"運: {_lordCharacter.Luck} / 次コスト{_lordCharacter.GetCostToIncrease(_lordCharacter.Luck)}\n"
             + $"支援力: {_lordCharacter.Support} / 次コスト{_lordCharacter.GetCostToIncrease(_lordCharacter.Support)}\n"
             + $"思考力: {_lordCharacter.Thinking} / 次コスト{_lordCharacter.GetCostToIncrease(_lordCharacter.Thinking)}";
+    }
+
+    private int GetAvailableMetaPoints(GameState state)
+    {
+        int earnedMetaPoints = _gameManager != null && _gameManager.MetaProgressionSystem != null
+            ? _gameManager.MetaProgressionSystem.CalculateEarnedMetaPoints(state)
+            : 0;
+        int spentMetaPoints = state != null ? state.SpentMetaPoints : 0;
+        int remaining = earnedMetaPoints - spentMetaPoints;
+        return remaining > 0 ? remaining : 0;
     }
 
     private static void SetText(TMP_Text target, string value)

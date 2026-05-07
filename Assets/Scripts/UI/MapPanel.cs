@@ -1,6 +1,6 @@
 using System.Text;
-using UnityEngine;
 using TMPro;
+using UnityEngine;
 
 #pragma warning disable 0649
 public class MapPanel : MonoBehaviour
@@ -27,12 +27,12 @@ public class MapPanel : MonoBehaviour
         if (_mapData == null)
         {
             SetText(mapText, "マップ: 未接続");
-            SetText(legendText, "凡例: .草地 #岩地 ~川 Dダンジョン R襲撃起点");
+            SetText(legendText, "凡例: H中心地 o開拓地 .平地 #岩場 ~川 Dダンジョン R襲撃元");
             return;
         }
 
         SetText(mapText, BuildMapText(_mapData));
-        SetText(legendText, "凡例: .草地 #岩地 ~川 Dダンジョン R襲撃起点");
+        SetText(legendText, $"凡例: H中心地 o開拓地 .平地 #岩場 ~川 Dダンジョン R襲撃元 / 開拓済み {_mapData.DevelopedTileCount} マス");
     }
 
     private static string BuildMapText(MapData mapData)
@@ -42,7 +42,7 @@ public class MapPanel : MonoBehaviour
         {
             for (int x = 0; x < mapData.Width; x++)
             {
-                builder.Append(ToMapChar(mapData.GetTile(x, y)));
+                builder.Append(ToMapChar(mapData, x, y));
             }
 
             builder.AppendLine();
@@ -51,8 +51,19 @@ public class MapPanel : MonoBehaviour
         return builder.ToString();
     }
 
-    private static char ToMapChar(MapTileType tileType)
+    private static char ToMapChar(MapData mapData, int x, int y)
     {
+        if (x == mapData.HomeX && y == mapData.HomeY)
+        {
+            return 'H';
+        }
+
+        if (mapData.IsDeveloped(x, y))
+        {
+            return 'o';
+        }
+
+        MapTileType tileType = mapData.GetTile(x, y);
         if (tileType == MapTileType.Rock)
         {
             return '#';

@@ -4,5 +4,6 @@ public enum GuildAction
     Defend,
     Explore,
     Research,
-    Construct
+    Construct,
+    Develop
 }

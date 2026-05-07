@@ -7,8 +7,8 @@ public class ResourceManager
             return;
         }
 
-        int foodProduction = state.BaseFoodProduction;
-        int fundsDelta = 0;
+        int foodProduction = state.BaseFoodProduction + state.AssignedFoodWorkers * GameConstants.FOOD_PRODUCTION_PER_ASSIGNED_WORKER;
+        int fundsDelta = state.AssignedFundsWorkers * GameConstants.FUNDS_PRODUCTION_PER_ASSIGNED_WORKER;
 
         for (int i = 0; i < state.Buildings.Count; i++)
         {

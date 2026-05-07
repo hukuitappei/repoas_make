@@ -8,6 +8,8 @@ public class TurnManager
     private readonly RaidSystem _raidSystem;
     private readonly DungeonSystem _dungeonSystem;
     private readonly ResearchTree _researchTree;
+    private readonly DevelopmentSystem _developmentSystem;
+    private readonly MapData _mapData;
 
     public TurnManager(
         GameState state,
@@ -17,7 +19,9 @@ public class TurnManager
         HappinessSystem happinessSystem,
         RaidSystem raidSystem,
         DungeonSystem dungeonSystem,
-        ResearchTree researchTree)
+        ResearchTree researchTree,
+        DevelopmentSystem developmentSystem,
+        MapData mapData)
     {
         _state = state;
         _eventSystem = eventSystem;
@@ -27,6 +31,8 @@ public class TurnManager
         _raidSystem = raidSystem;
         _dungeonSystem = dungeonSystem;
         _researchTree = researchTree;
+        _developmentSystem = developmentSystem;
+        _mapData = mapData;
     }
 
     public void AdvanceTurn()
@@ -35,6 +41,8 @@ public class TurnManager
         _eventSystem.ResolveTurnStartEvents(_state);
         _resourceManager.ResolveTurnResources(_state);
         _guildManager.ResolveActions(_state);
+        int assignedDeveloperMembers = _guildManager != null ? _guildManager.CountAssignedDevelopmentWorkers(_state) : 0;
+        _developmentSystem.ResolveTurnDevelopment(_state, _mapData, assignedDeveloperMembers);
         _happinessSystem.Recalculate(_state);
         _raidSystem.ResolveRaidCheck(_state);
         _dungeonSystem.StartAssignedDungeonRuns(_state);
