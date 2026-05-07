@@ -13,6 +13,7 @@ public static class InitialDataAssetGenerator
     private const string GuildsFolder = RootFolder + "/Guilds";
     private const string ResearchFolder = RootFolder + "/Research";
     private const string EventsFolder = RootFolder + "/Events";
+    private const string MetaFolder = RootFolder + "/Meta";
 
     [MenuItem("repoas/Create Initial Data Assets")]
     public static void CreateInitialDataAssets()
@@ -22,11 +23,13 @@ public static class InitialDataAssetGenerator
         EnsureFolder(RootFolder, "Guilds");
         EnsureFolder(RootFolder, "Research");
         EnsureFolder(RootFolder, "Events");
+        EnsureFolder(RootFolder, "Meta");
 
         CreateBuildingAssets();
         CreateGuildAssets();
         CreateResearchNodeAssets();
         CreateEventAssets();
+        CreateMetaSkillAssets();
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
@@ -82,6 +85,7 @@ public static class InitialDataAssetGenerator
         AssignObjectReference(serializedBootstrap, "mainGameScreen", UnityEngine.Object.FindFirstObjectByType<MainGameScreen>());
         AssignObjectReference(serializedBootstrap, "mapPanel", UnityEngine.Object.FindFirstObjectByType<MapPanel>());
         AssignArray(serializedBootstrap, "guildCatalog", FindAssetsByType<GuildData>(GuildsFolder));
+        AssignArray(serializedBootstrap, "researchCatalog", FindAssetsByType<ResearchNodeData>(ResearchFolder));
         AssignArray(serializedBootstrap, "availableBuildings", FindAssetsByType<BuildingData>(BuildingsFolder));
         AssignArray(serializedBootstrap, "startingBuildings", new UnityEngine.Object[]
         {
@@ -117,34 +121,70 @@ public static class InitialDataAssetGenerator
         int wired = 0;
 
         MainGameScreen mainScreen = UnityEngine.Object.FindFirstObjectByType<MainGameScreen>();
+        ResourcePanel resourcePanel = UnityEngine.Object.FindFirstObjectByType<ResourcePanel>();
+        PopulationAssignmentPanel populationAssignmentPanel = UnityEngine.Object.FindFirstObjectByType<PopulationAssignmentPanel>();
+        ResearchPanel researchPanel = UnityEngine.Object.FindFirstObjectByType<ResearchPanel>();
+        ExplorationPanel explorationPanel = UnityEngine.Object.FindFirstObjectByType<ExplorationPanel>();
+        BuildPanel buildPanel = UnityEngine.Object.FindFirstObjectByType<BuildPanel>();
+        GuildPanel guildPanel = UnityEngine.Object.FindFirstObjectByType<GuildPanel>();
+        HappinessPanel happinessPanel = UnityEngine.Object.FindFirstObjectByType<HappinessPanel>();
+        MapPanel mapPanel = UnityEngine.Object.FindFirstObjectByType<MapPanel>();
+        RaidPopup raidPopup = UnityEngine.Object.FindFirstObjectByType<RaidPopup>();
+        MetaScreen metaScreen = UnityEngine.Object.FindFirstObjectByType<MetaScreen>();
+
         if (mainScreen != null)
         {
             SerializedObject so = new SerializedObject(mainScreen);
-            wired += AssignTmpTextInScene(so, "turnText", "TurnText");
-            wired += AssignTmpTextInScene(so, "gameStateText", "GameStateText");
+            wired += EnsureTmpTextInChildren(so, "turnText", mainScreen.gameObject, "TurnText");
+            wired += EnsureTmpTextInChildren(so, "gameStateText", mainScreen.gameObject, "GameStateText");
+            AssignObjectReference(so, "resourcePanel", resourcePanel);
+            AssignObjectReference(so, "populationAssignmentPanel", populationAssignmentPanel);
+            AssignObjectReference(so, "researchPanel", researchPanel);
+            AssignObjectReference(so, "explorationPanel", explorationPanel);
+            AssignObjectReference(so, "buildPanel", buildPanel);
+            AssignObjectReference(so, "guildPanel", guildPanel);
+            AssignObjectReference(so, "happinessPanel", happinessPanel);
+            AssignObjectReference(so, "raidPopup", raidPopup);
+            AssignObjectReference(so, "metaScreen", metaScreen);
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(mainScreen);
         }
 
-        ResourcePanel resourcePanel = UnityEngine.Object.FindFirstObjectByType<ResourcePanel>();
         if (resourcePanel != null)
         {
             SerializedObject so = new SerializedObject(resourcePanel);
-            wired += AssignTmpTextInScene(so, "summaryText", "SummaryText");
-            wired += AssignTmpTextInScene(so, "materialsText", "MaterialsText");
-            wired += AssignTmpTextInScene(so, "warningText", "WarningText");
+            wired += EnsureTmpTextInChildren(so, "summaryText", resourcePanel.gameObject, "SummaryText");
+            wired += EnsureTmpTextInChildren(so, "materialsText", resourcePanel.gameObject, "MaterialsText");
+            wired += EnsureTmpTextInChildren(so, "warningText", resourcePanel.gameObject, "WarningText");
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(resourcePanel);
         }
 
-        GuildPanel guildPanel = UnityEngine.Object.FindFirstObjectByType<GuildPanel>();
+        if (populationAssignmentPanel != null)
+        {
+            SerializedObject so = new SerializedObject(populationAssignmentPanel);
+            wired += AssignTmpTextInScene(so, "assignmentSummaryText", "AssignmentSummaryText");
+            wired += AssignTmpTextInScene(so, "foodWorkersValueText", "FoodWorkersValueText");
+            wired += AssignTmpTextInScene(so, "fundsWorkersValueText", "FundsWorkersValueText");
+            wired += AssignTmpTextInScene(so, "developmentWorkersValueText", "DevelopmentWorkersValueText");
+            wired += AssignSliderInChildren(so, "foodWorkersSlider", populationAssignmentPanel, "FoodWorkersSlider");
+            wired += AssignSliderInChildren(so, "fundsWorkersSlider", populationAssignmentPanel, "FundsWorkersSlider");
+            wired += AssignSliderInChildren(so, "developmentWorkersSlider", populationAssignmentPanel, "DevelopmentWorkersSlider");
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(populationAssignmentPanel);
+        }
+
         if (guildPanel != null)
         {
             SerializedObject so = new SerializedObject(guildPanel);
             wired += AssignTmpTextInScene(so, "guildSummaryText", "GuildSummaryText");
+            wired += AssignTmpTextInScene(so, "selectedGuildText", "SelectedGuildText");
             wired += AssignTmpTextInScene(so, "memberListText", "MemberListText");
             wired += AssignTmpTextInScene(so, "selectedMemberText", "SelectedMemberText");
             wired += AssignTmpTextInScene(so, "actionResultText", "ActionResultText");
+            wired += AssignButtonInChildren(so, "previousGuildButton", guildPanel, "PreviousGuildButton");
+            wired += AssignButtonInChildren(so, "nextGuildButton", guildPanel, "NextGuildButton");
+            wired += AssignButtonInChildren(so, "hireButton", guildPanel, "HireButton");
             wired += AssignButtonInChildren(so, "previousMemberButton", guildPanel, "PreviousMemberButton");
             wired += AssignButtonInChildren(so, "nextMemberButton", guildPanel, "NextMemberButton");
             wired += AssignButtonInChildren(so, "idleButton", guildPanel, "IdleButton");
@@ -152,76 +192,96 @@ public static class InitialDataAssetGenerator
             wired += AssignButtonInChildren(so, "exploreButton", guildPanel, "ExploreButton");
             wired += AssignButtonInChildren(so, "researchButton", guildPanel, "ResearchButton");
             wired += AssignButtonInChildren(so, "constructButton", guildPanel, "ConstructButton");
+            wired += AssignButtonInChildren(so, "developButton", guildPanel, "DevelopButton");
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(guildPanel);
         }
 
-        ExplorationPanel explorationPanel = UnityEngine.Object.FindFirstObjectByType<ExplorationPanel>();
         if (explorationPanel != null)
         {
             SerializedObject so = new SerializedObject(explorationPanel);
-            wired += AssignTmpTextInScene(so, "statusText", "StatusText");
-            wired += AssignTmpTextInScene(so, "resultText", "ResultText");
+            wired += EnsureTmpTextInChildren(so, "statusText", explorationPanel.gameObject, "StatusText");
+            wired += EnsureTmpTextInChildren(so, "resultText", explorationPanel.gameObject, "ResultText");
             wired += AssignButtonInChildren(so, "exploreButton", explorationPanel, "exploreButton");
             wired += AssignButtonInChildren(so, "startDungeonButton", explorationPanel, "StartDungeonButton");
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(explorationPanel);
         }
 
-        MapPanel mapPanel = UnityEngine.Object.FindFirstObjectByType<MapPanel>();
         if (mapPanel != null)
         {
             SerializedObject so = new SerializedObject(mapPanel);
-            wired += AssignTmpTextInScene(so, "mapText", "MapText");
-            wired += AssignTmpTextInScene(so, "legendText", "LegendText");
+            wired += EnsureTmpTextInChildren(so, "mapText", mapPanel.gameObject, "MapText");
+            wired += EnsureTmpTextInChildren(so, "legendText", mapPanel.gameObject, "LegendText");
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(mapPanel);
         }
 
-        BuildPanel buildPanel = UnityEngine.Object.FindFirstObjectByType<BuildPanel>();
         if (buildPanel != null)
         {
             SerializedObject so = new SerializedObject(buildPanel);
+            wired += AssignTmpTextInScene(so, "ownedBuildingsText", "OwnedBuildingsText");
+            wired += AssignTmpTextInScene(so, "availableBuildingsText", "AvailableBuildingsText");
+            wired += AssignTmpTextInScene(so, "buildQueueText", "BuildQueueText");
             AssignArray(so, "availableBuildings", FindAssetsByType<BuildingData>(BuildingsFolder));
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(buildPanel);
-            Debug.LogWarning("[Wire] BuildPanel: ownedBuildingsText / availableBuildingsText — create two TMP Text child objects and assign manually.");
         }
 
-        ResearchPanel researchPanel = UnityEngine.Object.FindFirstObjectByType<ResearchPanel>();
         if (researchPanel != null)
         {
             SerializedObject so = new SerializedObject(researchPanel);
+            wired += AssignTmpTextInScene(so, "activeResearchText", "ActiveResearchText");
+            wired += AssignTmpTextInScene(so, "completedResearchText", "CompletedResearchText");
+            wired += AssignTmpTextInScene(so, "availableResearchText", "AvailableResearchText");
             AssignArray(so, "availableNodes", FindAssetsByType<ResearchNodeData>(ResearchFolder));
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(researchPanel);
-            Debug.LogWarning("[Wire] ResearchPanel: activeResearchText / completedResearchText / availableResearchText — create TMP Text child objects and assign manually.");
         }
 
-        HappinessPanel happinessPanel = UnityEngine.Object.FindFirstObjectByType<HappinessPanel>();
         if (happinessPanel != null)
         {
-            Debug.LogWarning("[Wire] HappinessPanel: happinessText / detailText — create TMP Text child objects and assign manually.");
+            SerializedObject so = new SerializedObject(happinessPanel);
+            wired += AssignTmpTextInScene(so, "happinessText", "HappinessText");
+            wired += AssignTmpTextInScene(so, "detailText", "HappinessDetailText");
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(happinessPanel);
         }
 
-        MetaScreen metaScreen = UnityEngine.Object.FindFirstObjectByType<MetaScreen>();
         if (metaScreen != null)
         {
-            Debug.LogWarning("[Wire] MetaScreen: scoreText / metaPointText / lordStatsText — create TMP Text child objects and assign manually.");
+            SerializedObject so = new SerializedObject(metaScreen);
+            wired += AssignTmpTextInScene(so, "scoreText", "ScoreText");
+            wired += AssignTmpTextInScene(so, "metaPointText", "MetaPointText");
+            wired += AssignTmpTextInScene(so, "lordStatsText", "LordStatsText");
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(metaScreen);
         }
 
-        RaidPopup raidPopup = UnityEngine.Object.FindFirstObjectByType<RaidPopup>();
         if (raidPopup != null)
         {
             SerializedObject so = new SerializedObject(raidPopup);
+            Transform rootChild = raidPopup.transform.Find("Root");
+            if (rootChild == null)
+            {
+                GameObject rootObject = new GameObject("Root");
+                rootObject.transform.SetParent(raidPopup.transform, false);
+                rootObject.AddComponent<RectTransform>();
+                rootChild = rootObject.transform;
+            }
+
+            AssignObjectReference(so, "root", rootChild.gameObject);
+            wired++;
+
+            wired += EnsureTmpTextInChildren(so, "titleText", rootChild.gameObject, "RaidTitleText");
+            wired += EnsureTmpTextInChildren(so, "detailText", rootChild.gameObject, "RaidDetailText");
             wired += AssignButtonInChildren(so, "closeButton", raidPopup, "CloseButton");
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(raidPopup);
-            Debug.LogWarning("[Wire] RaidPopup: root (GameObject) / titleText / detailText — create child objects and assign manually.");
         }
 
         EditorSceneManager.MarkSceneDirty(activeScene);
-        Debug.Log($"[Wire] Done. {wired} references auto-assigned. Check Console for manual-assignment warnings.");
+        Debug.Log($"[Wire] Done. {wired} references auto-assigned.");
     }
 
     [MenuItem("repoas/Layout Visible UI In Open Scene")]
@@ -268,6 +328,14 @@ public static class InitialDataAssetGenerator
 
         MainGameScreen mainScreen = UnityEngine.Object.FindFirstObjectByType<MainGameScreen>();
         ResourcePanel resourcePanel = UnityEngine.Object.FindFirstObjectByType<ResourcePanel>();
+        PopulationAssignmentPanel populationAssignmentPanel = UnityEngine.Object.FindFirstObjectByType<PopulationAssignmentPanel>();
+        if (populationAssignmentPanel == null)
+        {
+            GameObject panelObject = new GameObject("PopulationAssignmentPanelObject");
+            panelObject.transform.SetParent(canvas.transform, false);
+            panelObject.AddComponent<RectTransform>();
+            populationAssignmentPanel = panelObject.AddComponent<PopulationAssignmentPanel>();
+        }
         ResearchPanel researchPanel = UnityEngine.Object.FindFirstObjectByType<ResearchPanel>();
         ExplorationPanel explorationPanel = UnityEngine.Object.FindFirstObjectByType<ExplorationPanel>();
         BuildPanel buildPanel = UnityEngine.Object.FindFirstObjectByType<BuildPanel>();
@@ -279,10 +347,12 @@ public static class InitialDataAssetGenerator
 
         LayoutMainGameScreen(mainScreen);
         LayoutResourcePanel(resourcePanel);
+        LayoutPopulationAssignmentPanel(populationAssignmentPanel);
         LayoutResearchPanel(researchPanel);
         LayoutExplorationPanel(explorationPanel);
         LayoutBuildPanel(buildPanel);
         LayoutGuildPanel(guildPanel);
+        EnsureGuildDevelopButton(guildPanel);
         LayoutHappinessPanel(happinessPanel);
         LayoutMapPanel(mapPanel);
         LayoutRaidPopup(raidPopup);
@@ -291,6 +361,8 @@ public static class InitialDataAssetGenerator
         EditorSceneManager.MarkSceneDirty(activeScene);
         Debug.Log("Visible UI layout applied.");
     }
+
+    // ---- Scene search helpers --------------------------------------------
 
     private static int AssignTmpTextInScene(SerializedObject so, string fieldName, string gameObjectName)
     {
@@ -306,6 +378,30 @@ public static class InitialDataAssetGenerator
 
         Debug.LogWarning($"[Wire] TMP_Text '{gameObjectName}' not found in scene (field: {fieldName}).");
         return 0;
+    }
+
+    private static int EnsureTmpTextInChildren(SerializedObject so, string fieldName, GameObject parent, string gameObjectName)
+    {
+        TMP_Text[] texts = parent.GetComponentsInChildren<TMP_Text>(true);
+        foreach (TMP_Text text in texts)
+        {
+            if (string.Equals(text.gameObject.name, gameObjectName, StringComparison.OrdinalIgnoreCase))
+            {
+                AssignObjectReference(so, fieldName, text);
+                return 1;
+            }
+        }
+
+        GameObject child = new GameObject(gameObjectName);
+        child.transform.SetParent(parent.transform, false);
+        child.AddComponent<RectTransform>();
+        TextMeshProUGUI created = child.AddComponent<TextMeshProUGUI>();
+        created.fontSize = 16;
+        created.color = Color.white;
+        created.textWrappingMode = TextWrappingModes.Normal;
+        AssignObjectReference(so, fieldName, created);
+        EditorUtility.SetDirty(child);
+        return 1;
     }
 
     private static int AssignButtonInChildren(SerializedObject so, string fieldName, Component parent, string gameObjectName)
@@ -324,6 +420,185 @@ public static class InitialDataAssetGenerator
         return 0;
     }
 
+    private static int AssignSliderInChildren(SerializedObject so, string fieldName, Component parent, string gameObjectName)
+    {
+        Slider[] sliders = parent.GetComponentsInChildren<Slider>(true);
+        foreach (Slider slider in sliders)
+        {
+            if (string.Equals(slider.gameObject.name, gameObjectName, StringComparison.OrdinalIgnoreCase))
+            {
+                AssignObjectReference(so, fieldName, slider);
+                return 1;
+            }
+        }
+
+        Debug.LogWarning($"[Wire] Slider '{gameObjectName}' not found under {parent.gameObject.name} (field: {fieldName}).");
+        return 0;
+    }
+
+    // ---- Child creation helpers ------------------------------------------
+
+    private static void DeduplicateDirectChildren(GameObject parent)
+    {
+        System.Collections.Generic.HashSet<string> seen = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        System.Collections.Generic.List<GameObject> toDestroy = new System.Collections.Generic.List<GameObject>();
+        for (int i = 0; i < parent.transform.childCount; i++)
+        {
+            string name = parent.transform.GetChild(i).gameObject.name;
+            if (!seen.Add(name))
+            {
+                toDestroy.Add(parent.transform.GetChild(i).gameObject);
+            }
+        }
+
+        foreach (GameObject obj in toDestroy)
+        {
+            Debug.Log($"[Layout] 重複子オブジェクトを削除: {parent.name}/{obj.name}");
+            UnityEngine.Object.DestroyImmediate(obj);
+        }
+    }
+
+    private static Transform FindDirectChildInsensitive(GameObject parent, string childName)
+    {
+        for (int i = 0; i < parent.transform.childCount; i++)
+        {
+            Transform child = parent.transform.GetChild(i);
+            if (string.Equals(child.name, childName, StringComparison.OrdinalIgnoreCase))
+            {
+                return child;
+            }
+        }
+
+        return null;
+    }
+
+    private static GameObject EnsureChildGameObject(GameObject parent, string childName)
+    {
+        Transform existing = FindDirectChildInsensitive(parent, childName);
+        if (existing != null)
+        {
+            return existing.gameObject;
+        }
+
+        GameObject child = new GameObject(childName);
+        child.transform.SetParent(parent.transform, false);
+        child.AddComponent<RectTransform>();
+        return child;
+    }
+
+    private static TMP_Text EnsureAndAssignTmpText(SerializedObject so, string propertyName, GameObject parent, string childName, Vector2 pos, Vector2 size, int fontSize = 16, bool darkText = false)
+    {
+        Transform existingTransform = FindDirectChildInsensitive(parent, childName);
+        TMP_Text tmpText = existingTransform != null ? existingTransform.GetComponent<TMP_Text>() : null;
+        if (tmpText == null)
+        {
+            if (existingTransform != null)
+            {
+                UnityEngine.Object.DestroyImmediate(existingTransform.gameObject);
+            }
+
+            GameObject child = new GameObject(childName);
+            child.transform.SetParent(parent.transform, false);
+            TextMeshProUGUI created = child.AddComponent<TextMeshProUGUI>();
+            created.textWrappingMode = TextWrappingModes.Normal;
+            tmpText = created;
+        }
+
+        tmpText.fontSize = fontSize;
+        tmpText.color = darkText ? new Color(0.1f, 0.1f, 0.1f) : Color.white;
+        SetRect(tmpText.GetComponent<RectTransform>(), new Vector2(0f, 1f), new Vector2(0f, 1f), pos, size);
+        AssignObjectReference(so, propertyName, tmpText);
+        EditorUtility.SetDirty(tmpText.gameObject);
+        return tmpText;
+    }
+
+    private static Button EnsureAndAssignButton(SerializedObject so, string propertyName, GameObject parent, string childName, string label, Vector2 pos, Vector2 size)
+    {
+        Transform existingTransform = FindDirectChildInsensitive(parent, childName);
+        Button button = existingTransform != null ? existingTransform.GetComponent<Button>() : null;
+        if (button == null)
+        {
+            if (existingTransform != null)
+            {
+                UnityEngine.Object.DestroyImmediate(existingTransform.gameObject);
+            }
+
+            GameObject btnObj = new GameObject(childName);
+            btnObj.transform.SetParent(parent.transform, false);
+            Image img = btnObj.AddComponent<Image>();
+            img.color = new Color(0.92f, 0.92f, 0.92f, 0.95f);
+            button = btnObj.AddComponent<Button>();
+            GameObject labelObj = new GameObject("Label");
+            labelObj.transform.SetParent(btnObj.transform, false);
+            Text labelText = labelObj.AddComponent<Text>();
+            labelText.text = label;
+            labelText.alignment = TextAnchor.MiddleCenter;
+            labelText.fontSize = 16;
+            labelText.color = Color.black;
+            SetRect(labelText.GetComponent<RectTransform>(), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, true);
+            EditorUtility.SetDirty(labelObj);
+        }
+
+        SetRect(button.GetComponent<RectTransform>(), new Vector2(0f, 1f), new Vector2(0f, 1f), pos, size);
+        AssignObjectReference(so, propertyName, button);
+        EditorUtility.SetDirty(button.gameObject);
+        return button;
+    }
+
+    private static Slider EnsureAndAssignSlider(SerializedObject so, string propertyName, GameObject parent, string childName, Vector2 pos, Vector2 size)
+    {
+        Transform existingTransform = FindDirectChildInsensitive(parent, childName);
+        Slider slider = existingTransform != null ? existingTransform.GetComponent<Slider>() : null;
+        if (slider == null)
+        {
+            GameObject sliderObj = new GameObject(childName);
+            sliderObj.transform.SetParent(parent.transform, false);
+
+            Image background = sliderObj.AddComponent<Image>();
+            background.color = new Color(0.25f, 0.25f, 0.25f, 0.9f);
+            slider = sliderObj.AddComponent<Slider>();
+
+            GameObject fillArea = new GameObject("Fill Area");
+            fillArea.transform.SetParent(sliderObj.transform, false);
+            RectTransform fillAreaRect = fillArea.AddComponent<RectTransform>();
+            SetRect(fillAreaRect, new Vector2(0f, 0f), new Vector2(1f, 1f), new Vector2(10f, 5f), new Vector2(-20f, -10f), true);
+
+            GameObject fill = new GameObject("Fill");
+            fill.transform.SetParent(fillArea.transform, false);
+            Image fillImage = fill.AddComponent<Image>();
+            fillImage.color = new Color(0.2f, 0.7f, 0.35f, 0.95f);
+            RectTransform fillRect = fill.GetComponent<RectTransform>();
+            SetRect(fillRect, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, true);
+
+            GameObject handleArea = new GameObject("Handle Slide Area");
+            handleArea.transform.SetParent(sliderObj.transform, false);
+            RectTransform handleAreaRect = handleArea.AddComponent<RectTransform>();
+            SetRect(handleAreaRect, new Vector2(0f, 0f), new Vector2(1f, 1f), new Vector2(10f, 0f), new Vector2(-10f, 0f), true);
+
+            GameObject handle = new GameObject("Handle");
+            handle.transform.SetParent(handleArea.transform, false);
+            Image handleImage = handle.AddComponent<Image>();
+            handleImage.color = new Color(0.92f, 0.92f, 0.92f, 1f);
+            RectTransform handleRect = handle.GetComponent<RectTransform>();
+            handleRect.sizeDelta = new Vector2(18f, 28f);
+
+            slider.fillRect = fillRect;
+            slider.handleRect = handleRect;
+            slider.targetGraphic = handleImage;
+            slider.direction = Slider.Direction.LeftToRight;
+            slider.minValue = 0f;
+            slider.maxValue = 100f;
+            slider.wholeNumbers = true;
+        }
+
+        SetRect(slider.GetComponent<RectTransform>(), new Vector2(0f, 1f), new Vector2(0f, 1f), pos, size);
+        AssignObjectReference(so, propertyName, slider);
+        EditorUtility.SetDirty(slider.gameObject);
+        return slider;
+    }
+
+    // ---- Layout sub-methods ----------------------------------------------
+
     private static void LayoutMainGameScreen(MainGameScreen mainScreen)
     {
         if (mainScreen == null)
@@ -331,6 +606,7 @@ public static class InitialDataAssetGenerator
             return;
         }
 
+        DeduplicateDirectChildren(mainScreen.gameObject);
         SetRect(mainScreen.GetComponent<RectTransform>(), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(0f, 0f));
 
         SerializedObject so = new SerializedObject(mainScreen);
@@ -348,6 +624,7 @@ public static class InitialDataAssetGenerator
             return;
         }
 
+        DeduplicateDirectChildren(mapPanel.gameObject);
         SetRect(mapPanel.GetComponent<RectTransform>(), new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(20f, 40f), new Vector2(440f, 420f));
 
         SerializedObject so = new SerializedObject(mapPanel);
@@ -364,6 +641,7 @@ public static class InitialDataAssetGenerator
             return;
         }
 
+        DeduplicateDirectChildren(resourcePanel.gameObject);
         SetRect(resourcePanel.GetComponent<RectTransform>(), new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-460f, -20f), new Vector2(430f, 180f));
 
         SerializedObject so = new SerializedObject(resourcePanel);
@@ -374,6 +652,28 @@ public static class InitialDataAssetGenerator
         EditorUtility.SetDirty(resourcePanel);
     }
 
+    private static void LayoutPopulationAssignmentPanel(PopulationAssignmentPanel populationAssignmentPanel)
+    {
+        if (populationAssignmentPanel == null)
+        {
+            return;
+        }
+
+        DeduplicateDirectChildren(populationAssignmentPanel.gameObject);
+        SetRect(populationAssignmentPanel.GetComponent<RectTransform>(), new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-460f, -210f), new Vector2(430f, 210f));
+
+        SerializedObject so = new SerializedObject(populationAssignmentPanel);
+        EnsureAndAssignTmpText(so, "assignmentSummaryText", populationAssignmentPanel.gameObject, "AssignmentSummaryText", new Vector2(0f, 0f), new Vector2(430f, 28f), 15);
+        EnsureAndAssignTmpText(so, "foodWorkersValueText", populationAssignmentPanel.gameObject, "FoodWorkersValueText", new Vector2(0f, -35f), new Vector2(430f, 24f), 14);
+        EnsureAndAssignSlider(so, "foodWorkersSlider", populationAssignmentPanel.gameObject, "FoodWorkersSlider", new Vector2(0f, -61f), new Vector2(430f, 24f));
+        EnsureAndAssignTmpText(so, "fundsWorkersValueText", populationAssignmentPanel.gameObject, "FundsWorkersValueText", new Vector2(0f, -93f), new Vector2(430f, 24f), 14);
+        EnsureAndAssignSlider(so, "fundsWorkersSlider", populationAssignmentPanel.gameObject, "FundsWorkersSlider", new Vector2(0f, -119f), new Vector2(430f, 24f));
+        EnsureAndAssignTmpText(so, "developmentWorkersValueText", populationAssignmentPanel.gameObject, "DevelopmentWorkersValueText", new Vector2(0f, -151f), new Vector2(430f, 24f), 14);
+        EnsureAndAssignSlider(so, "developmentWorkersSlider", populationAssignmentPanel.gameObject, "DevelopmentWorkersSlider", new Vector2(0f, -177f), new Vector2(430f, 24f));
+        so.ApplyModifiedPropertiesWithoutUndo();
+        EditorUtility.SetDirty(populationAssignmentPanel);
+    }
+
     private static void LayoutExplorationPanel(ExplorationPanel explorationPanel)
     {
         if (explorationPanel == null)
@@ -381,6 +681,7 @@ public static class InitialDataAssetGenerator
             return;
         }
 
+        DeduplicateDirectChildren(explorationPanel.gameObject);
         SetRect(explorationPanel.GetComponent<RectTransform>(), new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(20f, 20f), new Vector2(440f, 170f));
 
         SerializedObject so = new SerializedObject(explorationPanel);
@@ -399,20 +700,21 @@ public static class InitialDataAssetGenerator
             return;
         }
 
+        DeduplicateDirectChildren(guildPanel.gameObject);
         SetRect(guildPanel.GetComponent<RectTransform>(), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-560f, -120f), new Vector2(520f, 520f));
 
         SerializedObject so = new SerializedObject(guildPanel);
-        LayoutTextField(so, "guildSummaryText", new Vector2(0f, 0f), new Vector2(520f, 120f), TextAnchor.UpperLeft, 17);
-        LayoutTextField(so, "memberListText", new Vector2(0f, -125f), new Vector2(520f, 210f), TextAnchor.UpperLeft, 15);
-        LayoutTextField(so, "selectedMemberText", new Vector2(0f, -340f), new Vector2(520f, 32f), TextAnchor.MiddleLeft, 16);
-        LayoutTextField(so, "actionResultText", new Vector2(0f, -378f), new Vector2(520f, 42f), TextAnchor.UpperLeft, 15);
-        LayoutButtonField(so, "previousMemberButton", "前", new Vector2(0f, -430f), new Vector2(60f, 36f));
-        LayoutButtonField(so, "nextMemberButton", "次", new Vector2(70f, -430f), new Vector2(60f, 36f));
-        LayoutButtonField(so, "idleButton", "待機", new Vector2(0f, -472f), new Vector2(72f, 36f));
-        LayoutButtonField(so, "defendButton", "防衛", new Vector2(80f, -472f), new Vector2(72f, 36f));
-        LayoutButtonField(so, "exploreButton", "探索", new Vector2(160f, -472f), new Vector2(72f, 36f));
-        LayoutButtonField(so, "researchButton", "研究", new Vector2(240f, -472f), new Vector2(72f, 36f));
-        LayoutButtonField(so, "constructButton", "建設", new Vector2(320f, -472f), new Vector2(72f, 36f));
+        EnsureAndAssignTmpText(so, "guildSummaryText", guildPanel.gameObject, "GuildSummaryText", new Vector2(0f, 0f), new Vector2(520f, 120f), 17);
+        EnsureAndAssignTmpText(so, "memberListText", guildPanel.gameObject, "MemberListText", new Vector2(0f, -125f), new Vector2(520f, 210f), 15);
+        EnsureAndAssignTmpText(so, "selectedMemberText", guildPanel.gameObject, "SelectedMemberText", new Vector2(0f, -340f), new Vector2(520f, 32f), 16);
+        EnsureAndAssignTmpText(so, "actionResultText", guildPanel.gameObject, "ActionResultText", new Vector2(0f, -378f), new Vector2(520f, 42f), 15);
+        EnsureAndAssignButton(so, "previousMemberButton", guildPanel.gameObject, "PreviousMemberButton", "前", new Vector2(0f, -430f), new Vector2(60f, 36f));
+        EnsureAndAssignButton(so, "nextMemberButton", guildPanel.gameObject, "NextMemberButton", "次", new Vector2(70f, -430f), new Vector2(60f, 36f));
+        EnsureAndAssignButton(so, "idleButton", guildPanel.gameObject, "IdleButton", "待機", new Vector2(0f, -472f), new Vector2(72f, 36f));
+        EnsureAndAssignButton(so, "defendButton", guildPanel.gameObject, "DefendButton", "防衛", new Vector2(80f, -472f), new Vector2(72f, 36f));
+        EnsureAndAssignButton(so, "exploreButton", guildPanel.gameObject, "ExploreButton", "探索", new Vector2(160f, -472f), new Vector2(72f, 36f));
+        EnsureAndAssignButton(so, "researchButton", guildPanel.gameObject, "ResearchButton", "研究", new Vector2(240f, -472f), new Vector2(72f, 36f));
+        EnsureAndAssignButton(so, "constructButton", guildPanel.gameObject, "ConstructButton", "建設", new Vector2(320f, -472f), new Vector2(72f, 36f));
         so.ApplyModifiedPropertiesWithoutUndo();
         EditorUtility.SetDirty(guildPanel);
     }
@@ -424,7 +726,28 @@ public static class InitialDataAssetGenerator
             return;
         }
 
+        DeduplicateDirectChildren(buildPanel.gameObject);
         SetRect(buildPanel.GetComponent<RectTransform>(), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-250f, 20f), new Vector2(480f, 220f));
+
+        SerializedObject so = new SerializedObject(buildPanel);
+        EnsureAndAssignTmpText(so, "ownedBuildingsText", buildPanel.gameObject, "OwnedBuildingsText", new Vector2(0f, 0f), new Vector2(480f, 70f), 15);
+        EnsureAndAssignTmpText(so, "availableBuildingsText", buildPanel.gameObject, "AvailableBuildingsText", new Vector2(0f, -75f), new Vector2(480f, 100f), 14);
+        EnsureAndAssignTmpText(so, "buildQueueText", buildPanel.gameObject, "BuildQueueText", new Vector2(0f, -180f), new Vector2(480f, 40f), 15);
+        so.ApplyModifiedPropertiesWithoutUndo();
+        EditorUtility.SetDirty(buildPanel);
+    }
+
+    private static void EnsureGuildDevelopButton(GuildPanel guildPanel)
+    {
+        if (guildPanel == null)
+        {
+            return;
+        }
+
+        SerializedObject so = new SerializedObject(guildPanel);
+        EnsureAndAssignButton(so, "developButton", guildPanel.gameObject, "DevelopButton", "開拓", new Vector2(400f, -472f), new Vector2(72f, 36f));
+        so.ApplyModifiedPropertiesWithoutUndo();
+        EditorUtility.SetDirty(guildPanel);
     }
 
     private static void LayoutResearchPanel(ResearchPanel researchPanel)
@@ -434,7 +757,15 @@ public static class InitialDataAssetGenerator
             return;
         }
 
+        DeduplicateDirectChildren(researchPanel.gameObject);
         SetRect(researchPanel.GetComponent<RectTransform>(), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(-240f, -20f), new Vector2(480f, 230f));
+
+        SerializedObject so = new SerializedObject(researchPanel);
+        EnsureAndAssignTmpText(so, "activeResearchText", researchPanel.gameObject, "ActiveResearchText", new Vector2(0f, 0f), new Vector2(480f, 80f), 15);
+        EnsureAndAssignTmpText(so, "completedResearchText", researchPanel.gameObject, "CompletedResearchText", new Vector2(0f, -85f), new Vector2(480f, 50f), 14);
+        EnsureAndAssignTmpText(so, "availableResearchText", researchPanel.gameObject, "AvailableResearchText", new Vector2(0f, -140f), new Vector2(480f, 90f), 14);
+        so.ApplyModifiedPropertiesWithoutUndo();
+        EditorUtility.SetDirty(researchPanel);
     }
 
     private static void LayoutHappinessPanel(HappinessPanel happinessPanel)
@@ -444,7 +775,15 @@ public static class InitialDataAssetGenerator
             return;
         }
 
-        SetRect(happinessPanel.GetComponent<RectTransform>(), new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-460f, -210f), new Vector2(430f, 100f));
+        DeduplicateDirectChildren(happinessPanel.gameObject);
+        // ResourcePanel ends at row 200; PopulationAssignmentPanel at 210-420; HappinessPanel goes below at 430.
+        SetRect(happinessPanel.GetComponent<RectTransform>(), new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-460f, -430f), new Vector2(430f, 100f));
+
+        SerializedObject so = new SerializedObject(happinessPanel);
+        EnsureAndAssignTmpText(so, "happinessText", happinessPanel.gameObject, "HappinessText", new Vector2(4f, -4f), new Vector2(422f, 36f), 20, darkText: true);
+        EnsureAndAssignTmpText(so, "detailText", happinessPanel.gameObject, "HappinessDetailText", new Vector2(4f, -44f), new Vector2(422f, 56f), 15, darkText: true);
+        so.ApplyModifiedPropertiesWithoutUndo();
+        EditorUtility.SetDirty(happinessPanel);
     }
 
     private static void LayoutRaidPopup(RaidPopup raidPopup)
@@ -455,6 +794,22 @@ public static class InitialDataAssetGenerator
         }
 
         SetRect(raidPopup.GetComponent<RectTransform>(), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-200f, -120f), new Vector2(400f, 220f));
+
+        GameObject root = EnsureChildGameObject(raidPopup.gameObject, "Root");
+        RectTransform rootRt = root.GetComponent<RectTransform>();
+        SetRect(rootRt, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, true);
+        if (!Application.isPlaying)
+        {
+            root.SetActive(false);
+        }
+
+        SerializedObject so = new SerializedObject(raidPopup);
+        AssignObjectReference(so, "root", root);
+        EnsureAndAssignTmpText(so, "titleText", root, "RaidTitleText", new Vector2(0f, 0f), new Vector2(400f, 50f), 20);
+        EnsureAndAssignTmpText(so, "detailText", root, "RaidDetailText", new Vector2(0f, -55f), new Vector2(400f, 80f), 16);
+        EnsureAndAssignButton(so, "closeButton", root, "CloseButton", "閉じる", new Vector2(150f, -150f), new Vector2(100f, 40f));
+        so.ApplyModifiedPropertiesWithoutUndo();
+        EditorUtility.SetDirty(raidPopup);
     }
 
     private static void LayoutMetaScreen(MetaScreen metaScreen)
@@ -464,12 +819,22 @@ public static class InitialDataAssetGenerator
             return;
         }
 
+        DeduplicateDirectChildren(metaScreen.gameObject);
         SetRect(metaScreen.GetComponent<RectTransform>(), new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-460f, 20f), new Vector2(430f, 180f));
+
+        SerializedObject so = new SerializedObject(metaScreen);
+        EnsureAndAssignTmpText(so, "scoreText", metaScreen.gameObject, "ScoreText", new Vector2(0f, 0f), new Vector2(430f, 36f), 20, darkText: true);
+        EnsureAndAssignTmpText(so, "metaPointText", metaScreen.gameObject, "MetaPointText", new Vector2(0f, -40f), new Vector2(430f, 36f), 16, darkText: true);
+        EnsureAndAssignTmpText(so, "lordStatsText", metaScreen.gameObject, "LordStatsText", new Vector2(0f, -80f), new Vector2(430f, 100f), 15, darkText: true);
+        so.ApplyModifiedPropertiesWithoutUndo();
+        EditorUtility.SetDirty(metaScreen);
     }
+
+    // ---- Layout field helpers --------------------------------------------
 
     private static void LayoutTextField(SerializedObject so, string propertyName, Vector2 anchoredPosition, Vector2 size, TextAnchor anchor, int fontSize)
     {
-        LayoutTextField(so, propertyName, anchoredPosition, size, anchor, fontSize, Color.black);
+        LayoutTextField(so, propertyName, anchoredPosition, size, anchor, fontSize, Color.white);
     }
 
     private static void LayoutTextField(SerializedObject so, string propertyName, Vector2 anchoredPosition, Vector2 size, TextAnchor anchor, int fontSize, Color color)
@@ -477,6 +842,16 @@ public static class InitialDataAssetGenerator
         SerializedProperty property = so.FindProperty(propertyName);
         if (property == null || property.objectReferenceValue == null)
         {
+            return;
+        }
+
+        TMP_Text tmpText = property.objectReferenceValue as TMP_Text;
+        if (tmpText != null)
+        {
+            SetRect(tmpText.GetComponent<RectTransform>(), new Vector2(0f, 1f), new Vector2(0f, 1f), anchoredPosition, size);
+            tmpText.fontSize = fontSize;
+            tmpText.color = color;
+            EditorUtility.SetDirty(tmpText);
             return;
         }
 
@@ -568,6 +943,8 @@ public static class InitialDataAssetGenerator
         eventSystem.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
     }
 
+    // ---- ScriptableObject creation ---------------------------------------
+
     private static void CreateBuildingAssets()
     {
         UpsertBuilding("Farm", BuildingEffectType.FoodProduction, 3,
@@ -641,7 +1018,7 @@ public static class InitialDataAssetGenerator
     {
         UpsertGuild("WarriorGuild", GuildType.Warrior, string.Empty, 5, 80, 10, 5, 3, 1, new[] { GuildAction.Defend, GuildAction.Explore });
         UpsertGuild("MageGuild", GuildType.Mage, "mag_1", 3, 120, 3, 12, 1, 4, new[] { GuildAction.Research, GuildAction.Explore });
-        UpsertGuild("CraftsmanGuild", GuildType.Craftsman, "arc_1", 3, 100, 5, 10, 2, 3, new[] { GuildAction.Construct });
+        UpsertGuild("CraftsmanGuild", GuildType.Craftsman, "arc_1", 3, 100, 5, 10, 2, 3, new[] { GuildAction.Construct, GuildAction.Develop });
     }
 
     // ---- Research nodes --------------------------------------------------
@@ -692,7 +1069,7 @@ public static class InitialDataAssetGenerator
             160, 4, 1, 0,
             Requirements(Requirement(MaterialType.Wood, 20), Requirement(MaterialType.Foodstuff, 30)),
             new[] { "agri_1" },
-            Effects());
+            Effects(Effect(ResearchEffectType.AddFoodProductionPercent, 15)));
 
         UpsertResearchNode("agri_4", "大規模農業",
             "農場をさらに拡張可能にする大規模農業技術を確立する。",
@@ -734,7 +1111,7 @@ public static class InitialDataAssetGenerator
             240, 5, 1, 0,
             Requirements(Requirement(MaterialType.Magic, 25), Requirement(MaterialType.Wood, 15)),
             new[] { "mag_1" },
-            Effects());
+            Effects(Effect(ResearchEffectType.AddDungeonFloorSpeedBonus, 1)));
 
         UpsertResearchNode("mag_3", "予知術",
             "予知魔法により領主の運を高め、有利なイベントを引き寄せる。",
@@ -767,7 +1144,7 @@ public static class InitialDataAssetGenerator
             220, 5, 1, 0,
             Requirements(Requirement(MaterialType.Wood, 35), Requirement(MaterialType.Stone, 25)),
             new[] { "arc_1" },
-            Effects());
+            Effects(Effect(ResearchEffectType.AddHouseCapacityPercent, 50)));
 
         UpsertResearchNode("arc_4", "名匠の技",
             "職人の熟練技術で素材生産量を大幅に増加させる。",
@@ -880,6 +1257,8 @@ public static class InitialDataAssetGenerator
         return requirements;
     }
 
+    // ---- Event assets ----------------------------------------------------
+
     private static void CreateEventAssets()
     {
         CreateEvent("e_harvest_good", "豊作", "今年は各地で作物が豊富に実った。",
@@ -955,6 +1334,50 @@ public static class InitialDataAssetGenerator
             amount = amount
         };
     }
+
+    // ---- Meta skill assets -----------------------------------------------
+
+    private static void CreateMetaSkillAssets()
+    {
+        UpsertMetaSkill("meta_food", "初期食料増加", "周回開始時の食料を増やす。",
+            MetaSkillEffectType.AddStartingFood, MaterialType.Stone, 3, 5, 200);
+        UpsertMetaSkill("meta_funds", "初期資金増加", "周回開始時の資金を増やす。",
+            MetaSkillEffectType.AddStartingFunds, MaterialType.Stone, 3, 5, 100);
+        UpsertMetaSkill("meta_wood", "初期木材増加", "周回開始時のF木材を増やす。",
+            MetaSkillEffectType.AddStartingMaterial, MaterialType.Wood, 2, 5, 20);
+        UpsertMetaSkill("meta_stone", "初期石材増加", "周回開始時のF石材を増やす。",
+            MetaSkillEffectType.AddStartingMaterial, MaterialType.Stone, 2, 5, 10);
+        UpsertMetaSkill("meta_hire_cost", "ギルド雇用コスト削減", "ギルド員の雇用コストを削減する。",
+            MetaSkillEffectType.ReduceHireCostPercent, MaterialType.Stone, 5, 5, 5);
+        UpsertMetaSkill("meta_research_speed", "研究速度向上", "研究速度にボーナスを付与する。",
+            MetaSkillEffectType.AddResearchSpeedPercent, MaterialType.Stone, 5, 5, 5);
+        UpsertMetaSkill("meta_lord_stat", "領主ステータス初期値上昇", "領主の任意ステータスを1上昇させる。",
+            MetaSkillEffectType.AddLordStat, MaterialType.Stone, 1, 1, 1);
+    }
+
+    private static void UpsertMetaSkill(string skillId, string displayName, string description,
+        MetaSkillEffectType effectType, MaterialType materialType, int costPerLevel, int maxLevel, int effectValuePerLevel)
+    {
+        string path = MetaFolder + "/" + skillId + ".asset";
+        MetaSkillData asset = AssetDatabase.LoadAssetAtPath<MetaSkillData>(path);
+        if (asset == null)
+        {
+            asset = ScriptableObject.CreateInstance<MetaSkillData>();
+            AssetDatabase.CreateAsset(asset, path);
+        }
+
+        asset.skillId = skillId;
+        asset.displayName = displayName;
+        asset.description = description;
+        asset.effectType = effectType;
+        asset.materialType = materialType;
+        asset.costPerLevel = costPerLevel;
+        asset.maxLevel = maxLevel;
+        asset.effectValuePerLevel = effectValuePerLevel;
+        EditorUtility.SetDirty(asset);
+    }
+
+    // ---- Folder / asset utilities ----------------------------------------
 
     private static void EnsureFolder(string parentFolder, string childFolder)
     {

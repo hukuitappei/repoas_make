@@ -14,6 +14,11 @@ public class House : BuildingBase
         }
 
         int currentBonus = IsActive ? GetEffectValue() : 0;
+        if (IsActive && state.HouseCapacityBonusPercent > 0)
+        {
+            currentBonus += currentBonus * state.HouseCapacityBonusPercent / 100;
+        }
+
         state.AddPopulationCapacity(currentBonus - _appliedPopulationCapacityBonus);
         _appliedPopulationCapacityBonus = currentBonus;
     }

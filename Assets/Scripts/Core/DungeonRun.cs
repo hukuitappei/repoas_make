@@ -11,9 +11,10 @@ public class DungeonRun
         RemainingTurns = GameConstants.DUNGEON_TURNS_PER_FLOOR;
     }
 
-    public void Advance()
+    public void Advance(int speedBonus = 0)
     {
-        RemainingTurns--;
+        int advance = 1 + (speedBonus > 0 ? speedBonus : 0);
+        RemainingTurns -= advance;
     }
 
     public bool IsFloorCompleted()

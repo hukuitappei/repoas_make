@@ -290,6 +290,18 @@ public class ResearchTree
                     }
                 }
             }
+            else if (effect.effectType == ResearchEffectType.UnlockCombatSupport)
+            {
+                state.UnlockCombatSupport();
+            }
+            else if (effect.effectType == ResearchEffectType.AddHouseCapacityPercent)
+            {
+                state.AddHouseCapacityBonusPercent(effect.intValue);
+            }
+            else if (effect.effectType == ResearchEffectType.AddDungeonFloorSpeedBonus)
+            {
+                state.AddDungeonFloorSpeedBonus(effect.intValue);
+            }
         }
     }
 }

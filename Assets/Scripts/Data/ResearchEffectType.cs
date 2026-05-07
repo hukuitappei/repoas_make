@@ -10,5 +10,7 @@ public enum ResearchEffectType
     AddLordStat,
     AddGuildMaxMembers,
     AddDefensePercent,
-    AddMaterialProductionPercent
+    AddMaterialProductionPercent,
+    AddHouseCapacityPercent,
+    AddDungeonFloorSpeedBonus
 }

@@ -16,6 +16,9 @@ public class GameState
     public int Food { get; private set; }
     public int Funds { get; private set; }
     public int Population { get; private set; }
+    public int AssignedFoodWorkers { get; private set; }
+    public int AssignedFundsWorkers { get; private set; }
+    public int AssignedDevelopmentWorkers { get; private set; }
     public int Happiness { get; private set; }
     public int PopulationCapacity { get; private set; }
     public int BaseFoodProduction { get; private set; }
@@ -28,6 +31,10 @@ public class GameState
     public int DungeonRewardPercentBonus { get; private set; }
     public int HappinessBonus { get; private set; }
     public int GuildMoraleBonus { get; private set; }
+    public bool IsCombatSupportUnlocked { get; private set; }
+    public int HouseCapacityBonusPercent { get; private set; }
+    public int DungeonFloorSpeedBonus { get; private set; }
+    public int SpentMetaPoints { get; private set; }
     public int FundsDeficitTurnCount { get; private set; }
     public int HappinessCrisisTurnCount { get; private set; }
     public int RaidWinCount { get; private set; }
@@ -54,6 +61,7 @@ public class GameState
     public IReadOnlyCollection<string> CompletedNode0ResearchGroupIds => _completedNode0ResearchGroupIds;
     public IReadOnlyCollection<string> CompletedInitialResearchGroupIds => _completedInitialResearchGroupIds;
     public IReadOnlyCollection<string> CompletedUpperResearchGroupIds => _completedUpperResearchGroupIds;
+    public int FreePopulation => ClampMin(Population - AssignedFoodWorkers - AssignedFundsWorkers - AssignedDevelopmentWorkers, 0);
 
     public GameState()
     {
@@ -72,6 +80,9 @@ public class GameState
         Food = GameConstants.STARTING_FOOD;
         Funds = GameConstants.STARTING_FUNDS;
         Population = GameConstants.STARTING_POPULATION;
+        AssignedFoodWorkers = GameConstants.STARTING_ASSIGNED_FOOD_WORKERS;
+        AssignedFundsWorkers = GameConstants.STARTING_ASSIGNED_FUNDS_WORKERS;
+        AssignedDevelopmentWorkers = GameConstants.STARTING_ASSIGNED_DEVELOPMENT_WORKERS;
         Happiness = GameConstants.BASE_HAPPINESS;
         PopulationCapacity = GameConstants.STARTING_POPULATION;
 
@@ -122,6 +133,22 @@ public class GameState
     public void AddPopulation(int amount)
     {
         Population = ClampMin(Population + amount, 0);
+        NormalizeAssignedWorkers();
+    }
+
+    public bool TrySetAssignedFoodWorkers(int value)
+    {
+        return TrySetAssignedWorkers(value, AssignedFundsWorkers, AssignedDevelopmentWorkers);
+    }
+
+    public bool TrySetAssignedFundsWorkers(int value)
+    {
+        return TrySetAssignedWorkers(AssignedFoodWorkers, value, AssignedDevelopmentWorkers);
+    }
+
+    public bool TrySetAssignedDevelopmentWorkers(int value)
+    {
+        return TrySetAssignedWorkers(AssignedFoodWorkers, AssignedFundsWorkers, value);
     }
 
     public void SetHappiness(int value)
@@ -187,6 +214,24 @@ public class GameState
     public void AddGuildMoraleBonus(int amount)
     {
         GuildMoraleBonus += amount;
+    }
+
+    public void UnlockCombatSupport()
+    {
+        IsCombatSupportUnlocked = true;
+    }
+
+    public void AddHouseCapacityBonusPercent(int amount)
+    {
+        HouseCapacityBonusPercent += amount;
+    }
+
+    public void AddDungeonFloorSpeedBonus(int amount)
+    {
+        if (amount > 0)
+        {
+            DungeonFloorSpeedBonus += amount;
+        }
     }
 
     public void UnlockDungeonExploration()
@@ -418,6 +463,64 @@ public class GameState
         IsGameOver = true;
         IsVictory = isVictory;
         GameEndReason = reason;
+    }
+
+    public bool TrySpendMetaPoints(int amount)
+    {
+        if (amount <= 0)
+        {
+            return false;
+        }
+
+        SpentMetaPoints += amount;
+        return true;
+    }
+
+    private bool TrySetAssignedWorkers(int foodWorkers, int fundsWorkers, int developmentWorkers)
+    {
+        if (foodWorkers < 0
+            || fundsWorkers < 0
+            || developmentWorkers < 0
+            || foodWorkers > GameConstants.MAX_ASSIGNED_FOOD_WORKERS
+            || fundsWorkers > GameConstants.MAX_ASSIGNED_FUNDS_WORKERS)
+        {
+            return false;
+        }
+
+        if (foodWorkers + fundsWorkers + developmentWorkers > Population)
+        {
+            return false;
+        }
+
+        AssignedFoodWorkers = foodWorkers;
+        AssignedFundsWorkers = fundsWorkers;
+        AssignedDevelopmentWorkers = developmentWorkers;
+        return true;
+    }
+
+    private void NormalizeAssignedWorkers()
+    {
+        AssignedFoodWorkers = Clamp(AssignedFoodWorkers, 0, GameConstants.MAX_ASSIGNED_FOOD_WORKERS);
+        AssignedFundsWorkers = Clamp(AssignedFundsWorkers, 0, GameConstants.MAX_ASSIGNED_FUNDS_WORKERS);
+        AssignedDevelopmentWorkers = ClampMin(AssignedDevelopmentWorkers, 0);
+
+        int totalAssigned = AssignedFoodWorkers + AssignedFundsWorkers + AssignedDevelopmentWorkers;
+        if (totalAssigned <= Population)
+        {
+            return;
+        }
+
+        int overflow = totalAssigned - Population;
+        int reducedFromDevelopment = overflow < AssignedDevelopmentWorkers ? overflow : AssignedDevelopmentWorkers;
+        AssignedDevelopmentWorkers -= reducedFromDevelopment;
+        overflow -= reducedFromDevelopment;
+
+        int reducedFromFunds = overflow < AssignedFundsWorkers ? overflow : AssignedFundsWorkers;
+        AssignedFundsWorkers -= reducedFromFunds;
+        overflow -= reducedFromFunds;
+
+        int reducedFromFood = overflow < AssignedFoodWorkers ? overflow : AssignedFoodWorkers;
+        AssignedFoodWorkers -= reducedFromFood;
     }
 
     private void ConsumeMaterial(MaterialRequirement requirement)

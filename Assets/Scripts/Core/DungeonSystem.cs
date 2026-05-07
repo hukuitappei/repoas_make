@@ -91,7 +91,7 @@ public class DungeonSystem
         for (int i = _activeRuns.Count - 1; i >= 0; i--)
         {
             DungeonRun run = _activeRuns[i];
-            run.Advance();
+            run.Advance(state.DungeonFloorSpeedBonus);
             if (!run.IsFloorCompleted())
             {
                 continue;
