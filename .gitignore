@@ -94,3 +94,9 @@ ProjectSettings/SceneTemplateSettings.json
 *.env
 .env.local
 secrets.json
+
+# ===========================
+# Plastic SCM
+# ===========================
+.plastic/
+ignore.conf

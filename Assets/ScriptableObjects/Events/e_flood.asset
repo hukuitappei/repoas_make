@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78e03527c26512b4e84179594b5caab5, type: 3}
+  m_Name: e_flood
+  m_EditorClassIdentifier: Assembly-CSharp::EventData
+  eventId: e_flood
+  displayName: "\u6D2A\u6C34"
+  description: "\u5927\u96E8\u306B\u3088\u308B\u6D2A\u6C34\u3067\u8FB2\u5730\u3068\u84C4\u3048\u304C\u88AB\u5BB3\u3092\u53D7\u3051\u305F\u3002"
+  baseProbability: 0.05
+  priority: 8
+  effects:
+  - effectType: 0
+    materialType: 0
+    materialGrade: 0
+    amount: -200
+    multiplier: 0
+    targetId: 
+  - effectType: 1
+    materialType: 0
+    materialGrade: 0
+    amount: -50
+    multiplier: 0
+    targetId: 
+  prerequisiteConditions: []
+  choices: []

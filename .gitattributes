@@ -78,6 +78,13 @@
 *.webm          filter=lfs diff=lfs merge=lfs -text
 
 # ===========================
+# Git LFS — フォント
+# ===========================
+*.ttf           filter=lfs diff=lfs merge=lfs -text
+*.ttc           filter=lfs diff=lfs merge=lfs -text
+*.otf           filter=lfs diff=lfs merge=lfs -text
+
+# ===========================
 # Git LFS — Unity パッケージ / コンパイル済みバイナリ
 # ===========================
 *.unitypackage  filter=lfs diff=lfs merge=lfs -text
