@@ -14,6 +14,7 @@ public static class InitialDataAssetGenerator
     private const string ResearchFolder = RootFolder + "/Research";
     private const string EventsFolder = RootFolder + "/Events";
     private const string MetaFolder = RootFolder + "/Meta";
+    private const string DefaultTmpFontAssetPath = "Assets/Fonts/NotoSansJP-VariableFont_wght_0 SDF.asset";
 
     [MenuItem("repoas/Create Initial Data Assets")]
     public static void CreateInitialDataAssets()
@@ -506,6 +507,7 @@ public static class InitialDataAssetGenerator
             tmpText = created;
         }
 
+        ApplyDefaultTmpFont(tmpText);
         tmpText.fontSize = fontSize;
         tmpText.color = darkText ? new Color(0.1f, 0.1f, 0.1f) : Color.white;
         SetRect(tmpText.GetComponent<RectTransform>(), new Vector2(0f, 1f), new Vector2(0f, 1f), pos, size);
@@ -883,6 +885,7 @@ public static class InitialDataAssetGenerator
         TMP_Text tmpText = property.objectReferenceValue as TMP_Text;
         if (tmpText != null)
         {
+            ApplyDefaultTmpFont(tmpText);
             SetRect(tmpText.GetComponent<RectTransform>(), new Vector2(0f, 1f), new Vector2(0f, 1f), anchoredPosition, size);
             tmpText.fontSize = fontSize;
             tmpText.color = color;
@@ -964,6 +967,30 @@ public static class InitialDataAssetGenerator
             rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, sizeDelta.x);
             rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, sizeDelta.y);
         }
+    }
+
+    private static void ApplyDefaultTmpFont(TMP_Text tmpText)
+    {
+        if (tmpText == null)
+        {
+            return;
+        }
+
+        TMP_FontAsset fontAsset = GetDefaultTmpFontAsset();
+        if (fontAsset == null)
+        {
+            return;
+        }
+
+        if (tmpText.font != fontAsset)
+        {
+            tmpText.font = fontAsset;
+        }
+    }
+
+    private static TMP_FontAsset GetDefaultTmpFontAsset()
+    {
+        return AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(DefaultTmpFontAssetPath);
     }
 
     private static void EnsureEventSystemExists()
